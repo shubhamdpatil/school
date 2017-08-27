@@ -1,5 +1,5 @@
 import { NUMBER_RANGE, getRandomIntInclusive } from '../utils/Random'
-
+const util = require('util')
 
 let sums = [{
     index: 1,
@@ -81,6 +81,28 @@ class Addition {
         return operands;
     }
 
+    carryover(maxColumns) {
+        let previousCarryover = 0;
+        let sum = 0;
+        let carryoverDigits = [];
+        for (let i = 0; i < maxColumns; i++) {
+            this.operands.map((e) => {
+                let eString = e.toString();
+                sum += parseInt(eString[maxColumns - 1- i], 10)
+            })
+            if (sum > 9) {
+                let sumString = sum.toString();
+                let carry = sumString.slice(0, sumString.length - 1);
+                carryoverDigits.push(carry)
+                sum = parseInt(carry);
+            } else {
+                sum = 0;    
+                carryoverDigits.push('x')
+            }
+        }
+        return carryoverDigits.reverse().join('');
+    }
+
     sum(maxColumns) {
         const total = this.operands.reduce((sum, value) => {
             return sum + value;
@@ -125,6 +147,8 @@ export default function getAdditionSum(rows, columns) {
     sum.answer = {}
     sum.answer.answer = addition.sum(sum.inputs);
     sum.answer.steps = [];
+    let carryover = addition.carryover(columns+1)
+    sum.answer.steps.push({ type: 'carryover', value: carryover})
     operands(rows, addition, sum.answer.steps);
     sum.answer.steps.push({ type: 'line' });
     sum.answer.steps.push({ type: 'inputs' });

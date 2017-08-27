@@ -114,9 +114,9 @@ class Add extends Component {
 
     carryover(text) {
         let value = text.value.toString();
-        let xStart = this.RIGHT_X - value.length * this.LETTER_WIDTH;
-        let y = this.Y;
-        this.Y += this.CARRYOVER_HEIGHT;
+        let xStart = this.X_START;
+        let y = this.Y -this.CARRYOVER_HEIGHT+5;
+       // this.Y += this.CARRYOVER_HEIGHT;
 
         let texts = value.split('').map((e, i) => {
             return <text key={i + 1} x={xStart + i * this.LETTER_WIDTH} y={y} style={{ fill: 'orange', fontWeight: 'bold', fontSize: this.SMALL_FONT_HEIGHT, visibility: e === 'x' ? 'hidden' : 'visible' }}>{e} </text>
@@ -203,8 +203,6 @@ class Add extends Component {
                                 case 'inputs':
                                     return this.input(sum.inputs, this.showAnswer ? this.userAnswer : null,
                                         'blue', answerCircleColor, false);
-                                case 'carryover':
-                                    return this.carryover(e)
                                 case 'answer':
                                     return this.answerr(e)
                                 default:
