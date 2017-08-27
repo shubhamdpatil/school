@@ -1,6 +1,7 @@
 import React, { Component } from 'react';
 import styles from './../styles/Globals.css';
 import Add from './Add'
+import Sub from './Sub'
 import Addition from './../store/Addition';
 import MultiplicationC from './Multiplication';
 import DivisionC from './Division';
@@ -147,7 +148,7 @@ class Worksheet extends Component {
         this.keys = [];
         this.check = this.check.bind(this);
         this.newSum = this.newSum.bind(this);
-        this.selectedOperation = "addition";
+        this.selectedOperation = "subtraction";
         this.sums = [];
     }
 
@@ -205,13 +206,13 @@ class Worksheet extends Component {
             for (let i = 0; i < 1; i++) {
                 result.push(<DivisionC key={this.keys[i]} dividend={rows} divisor={columns} check={this.state.check} index={i + 1} />)
             }
-        } else {
+        } else if (operation === 'addition') {
             this.selectedOperation = "addition"
             if (this.state.new) {
                 this.sums = [];
                 for (let i = 0; i < count; i++) {
                     this.sums.push(getAdditionSum(rows, columns));
-                }    
+                }
             }
             this.sums.map((e, i) => {
                 result.push(<div key={i} style={{ borderStyle: 'solid', borderColor: 'gray', margin: '10px 40px 10px 10px', position: 'relative' }} >
@@ -221,6 +222,11 @@ class Worksheet extends Component {
             // for (let i = 0; i < 1; i++) {
             //     result.push(<Add key={this.keys[i]} sum={sum} operation={operation} digits={digits} size={length} check={this.state.check} index={i + 1} />)
             // }
+        } else if (operation === 'subtraction') {
+            this.selectedOperation = "subtraction"
+            result.push(<div key={0} style={{ borderStyle: 'solid', borderColor: 'gray', margin: '10px 40px 10px 10px', position: 'relative' }} >
+                {<Index index={0} />}
+                <Sub key={0} check={this.state.check} /> </div>);
         }
         return result;
     }

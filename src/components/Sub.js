@@ -9,31 +9,7 @@ const util = require('util')
 //const Snap = require(`imports-loader?this=>window,fix=>module.exports=0!snapsvg/dist/snap.svg.js`);
 
 
-let sum = [
-    {
-        type: 'textline',
-        value: [
-            {
-                text: '5',
-                crossed: 'y',
-                visible:'y'
-            },
-            {
-                text: '6',
-                crossed: 'n',
-                visible: 'n'
-            }
-        ]
-        },
-         {
-            
-         },
-         {
-            
-        } 
-]
 
-    
 function Index(props) {
     return <div className="circle"> {props.index} </div>
 }
@@ -63,12 +39,6 @@ class Sub extends Component {
 
 
     componentDidMount() {
-
-        let ns = 'http://www.w3.org/2000/svg'
-        let el = findDOMNode(this.refs.problem);
-        let bbox = el.getBBox();
-        el.setAttributeNS(null, 'width', bbox.width)
-        el.setAttributeNS(null, 'height', bbox.height)
     }
 
     componentDidUpdate(prevProps, prevState) {
@@ -76,8 +46,8 @@ class Sub extends Component {
         let ns = 'http://www.w3.org/2000/svg'
         let el = findDOMNode(this.refs.problem);
         let bbox = el.getBBox();
-        el.setAttributeNS(null, 'width', bbox.width + 5)
-        el.setAttributeNS(null, 'height', bbox.height)
+        el.setAttributeNS(null, 'width', bbox.width + 100)
+        el.setAttributeNS(null, 'height', bbox.height + 50)
 
         if (this.showAnswer) {
             let el = findDOMNode(this.refs.answer);
@@ -120,22 +90,6 @@ class Sub extends Component {
         return this.input(value.length, value.split(''), 'green', null, true)
     }
 
-    textline(text) {
-
-        let value = text.value.toString();
-        let xStart = this.X_START; //this.RIGHT_X - (value.length + (text.operation ? 1 : 0)) * this.LETTER_WIDTH;
-        let operation = text.operation ? this.plus(xStart, this.Y) : null;
-
-        xStart += (text.operation ? 1 : 0) * this.LETTER_WIDTH;
-        let y = this.Y;
-        this.Y += this.TEXT_HEIGHT;
-
-        let texts = value.split('').map((e, i) => {
-            return <text key={i} x={xStart + i * this.LETTER_WIDTH} y={y} style={{ fill: 'black', fontSize: this.BIG_FONT_HEIGHT, visibility: e === 'x' ? 'hidden' : 'visible' }}>{e} </text>
-        });
-        return <g key={this.g++}> {operation} {texts} </g>
-    }
-
     carryover(text) {
         let value = text.value.toString();
         let xStart = this.X_START;
@@ -162,12 +116,19 @@ class Sub extends Component {
         </g>)
     }
 
+    minus(x, y) {
+        return (<g>
+            <line x1={x} y1={y - 10} x2={x + 20} y2={y - 10} style={{ stroke: 'rgb(0,0,0)', strokeWidth: '2' }} />
+        </g>)
+    }
+
     input(length, values, color = 'blue', circleColor = null, readOnly = true) {
         let inputs = [];
 
+
         let y = this.Y - 10;
         this.Y += this.INPUT_HEIGHT;
-        let xStart = this.X_START - this.HALF_BIG_FONT_HEIGHT//this.RIGHT_X - length * this.LETTER_WIDTH - 15;
+        let xStart = this.X_START + this.LETTER_WIDTH - 20;//this.HALF_BIG_FONT_HEIGHT//this.RIGHT_X - length * this.LETTER_WIDTH - 15;
         if (!readOnly) {
             this.inputs = [];
         }
@@ -205,60 +166,96 @@ class Sub extends Component {
             </text > </g>)
     }
 
+    textline(text) {
+        let xStart = this.X_START;
+        let y = this.Y;
+        let operation = text.operation ? this.minus(xStart, this.Y) : null;
+        this.Y += this.TEXT_HEIGHT;
+
+        xStart += this.LETTER_WIDTH;
+
+        let texts = text.texts.map((e, i) => {
+            if (e.text === 'x')
+                return;
+            return <text key={i} x={xStart + i * this.LETTER_WIDTH} y={y} style={{ fill: 'black', fontSize: this.BIG_FONT_HEIGHT, visibility: e.visible ? 'visible' : 'hidden', textDecoration: e.crossed ? 'line-through' : 'none', textDecorationColor: e.crossed ? 'red' : 'black', textAnchor: 'middle' }}>{e.text} </text>
+        });
+        //console.log('texts : ' + util.inspect(texts, false, null))
+
+        return <g key={this.g++}> {operation} {texts} </g>
+    }
+
     render() {
         let answerCircleColor = null;
         if (this.showAnswer) {
             answerCircleColor = this.answerCorrect ? 'green' : 'red';
         }
-        let sum = this.props.sum;
+        // let sum = this.props.sum;
+
+        let sum = [
+            {
+                type: 'textline',
+                texts: [
+                    {
+                        text: '5',
+                        visible: 'y'
+                    },
+                    {
+                        text: '2',
+                        visible: 'n'
+                    }
+                ]
+            },
+            {
+                type: 'textline',
+                operation: '-',
+                texts: [
+                    {
+                        text: '4',
+                        visible: 'y'
+                    },
+                    {
+                        text: '6',
+                        visible: 'n'
+                    }
+                ]
+            },
+            {
+                type: 'line'
+            },
+            {
+                type: 'inputs',
+                length: 2
+            }
+        ]
+
+
+
         return (
-            <div className="sumContainer" style={{ display: 'flex', margin: '20px' }}>
+            <div className="sumContainer" style={{ display: 'flex', margin: '20px' }
+            }>
                 <div className={classNames(
                     'sum1', 'blueBorder')}>
                     <Index index='Q' />
                     <svg ref="problem" style={{ paddingLeft: '20px' }}>
                         {this.Y = this.Y_START} {this.X = this.X_START} {this.inputs = []}
-                        {sum.problem.steps.map((e, i) => {
-                            switch (e.type) {
-                                case 'number':
-                                    return this.textline(e)
-                                case 'line':
-                                    return this.line(sum.inputs);
-                                case 'inputs':
-                                    return this.input(sum.inputs, this.showAnswer ? this.userAnswer : null,
-                                        'blue', answerCircleColor, false);
-                                case 'answer':
-                                    return this.answerr(e)
-                                default:
-                            }
-                        })}
+                        {
+                            sum.map((e, i) => {
+                                switch (e.type) {
+                                    case 'textline':
+                                        return this.textline(e);
+                                    case 'line':
+                                        return this.line(3);
+                                    case 'inputs':
+                                        return this.input(e.length, this.showAnswer ? this.userAnswer : null,
+                                            'blue', answerCircleColor, false);
+                                    default:
+                                        break;
+                                }
+                            })
                         }
                     </svg>
                 </div>
-
-                {this.showAnswer &&
-                    <div className={classNames('sum1', 'greenBorder')}>
-                        <Index index='A' />
-                        <svg ref="answer" style={{ paddingLeft: '20px' }} >
-                            {this.Y = this.Y_START} {this.X = this.X_START}
-                            {sum.answer.steps.map((e, i) => {
-                                switch (e.type) {
-                                    case 'number':
-                                        return this.textline(e)
-                                    case 'line':
-                                        return this.line(sum.inputs)
-                                    case 'carryover':
-                                        return this.carryover(e)
-                                    case 'answer':
-                                        return this.answerr(e)
-                                    default:
-                                }
-                            })}
-                            }
-                    </svg>
-                    </div>
-                }
-            </div>
+            </div >
         )
     }
 }
