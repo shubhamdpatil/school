@@ -255,7 +255,51 @@ class Sub extends Component {
                         }
                     </svg>
                 </div>
-            </div >
+                <div style={{ display: 'flex', flexDirection:'column' }}>
+                    <div className={classNames('sum1', 'greenBorder')}>
+                        <Index index='A' />
+                        <svg ref="answer" style={{ paddingLeft: '20px' }}>
+                            {this.Y = this.Y_START} {this.X = this.X_START} {this.inputs = []}
+                            {
+                                sum.map((e, i) => {
+                                    switch (e.type) {
+                                        case 'textline':
+                                            return this.textline(e);
+                                        case 'line':
+                                            return this.line(3);
+                                        case 'inputs':
+                                            return this.input(e.length, this.showAnswer ? this.userAnswer : null,
+                                                'blue', answerCircleColor, false);
+                                        default:
+                                            break;
+                                    }
+                                })
+                            }
+                        </svg>
+                    </div>
+                    <div className={classNames('sum1', 'greenBorder')}>
+                        <Index index='A' />
+                        <svg ref="answer" style={{ paddingLeft: '20px' }}>
+                            {this.Y = this.Y_START} {this.X = this.X_START} {this.inputs = []}
+                            {
+                                sum.map((e, i) => {
+                                    switch (e.type) {
+                                        case 'textline':
+                                            return this.textline(e);
+                                        case 'line':
+                                            return this.line(3);
+                                        case 'inputs':
+                                            return this.input(e.length, this.showAnswer ? this.userAnswer : null,
+                                                'blue', answerCircleColor, false);
+                                        default:
+                                            break;
+                                    }
+                                })
+                            }
+                        </svg>
+                    </div>
+                </div>
+            </div>
         )
     }
 }
