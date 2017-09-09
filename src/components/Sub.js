@@ -203,6 +203,23 @@ class Sub extends Component {
         ]
     }
 
+    getSum() {
+        let operands  = ['52', '46'], answer = '06';
+        let problem = {
+            type:'problem'
+        }
+        operands.map((e) => {
+             let k = e.map(d => {
+                
+            })
+            /*
+            return {
+                 type: 'textline'
+                 
+            }
+        }) */
+    })
+}
 
     componentDidMount() {
     }
