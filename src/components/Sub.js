@@ -33,7 +33,6 @@ class Sub extends Component {
         this.Y = this.Y_START;
         this.X = this.X_START;
         this.showAnswer = false;
-        this.userAnswer = null;
         this.g = 0;
         this.sum = [
             {
@@ -41,28 +40,12 @@ class Sub extends Component {
                 steps: [
                     {
                         type: 'textline',
-                        size: 'small',
                         texts: [
                             {
-                                text: '5',
-                                visible: 'y'
-                            },
-                            {
-                                text: '12',
-                                visible: 'n'
-                            }
-                        ]
-                    },
-                    {
-                        type: 'textline',
-                        texts: [
-                            {
-                                text: '5',
-                                visible: 'y'
+                                text: '5'
                             },
                             {
                                 text: '2',
-                                visible: 'n',
                                 crossed: 'y'
                             }
                         ]
@@ -72,12 +55,10 @@ class Sub extends Component {
                         operation: '-',
                         texts: [
                             {
-                                text: '4',
-                                visible: 'y'
+                                text: '4'
                             },
                             {
-                                text: '6',
-                                visible: 'n'
+                                text: '6'
                             }
                         ]
                     },
@@ -86,15 +67,15 @@ class Sub extends Component {
                     },
                     {
                         type: 'textline',
+                        answer:'y',
                         texts: [
                             {
-                                text: '5',
-                                visible: 'y'
+                                text: '0',
+                                hidden: 'y'
                             },
                             {
-                                text: '2',
-                                visible: 'n',
-                                strikeThrough: 'y'
+                                text: '6',
+                                hidden: 'y'
                             }
                         ]
                     },
@@ -108,12 +89,10 @@ class Sub extends Component {
                         size: 'small',
                         texts: [
                             {
-                                text: '5',
-                                visible: 'y'
+                                text: '4',
                             },
                             {
-                                text: '12',
-                                visible: 'n'
+                                text: '12'
                             }
                         ]
                     },
@@ -122,7 +101,7 @@ class Sub extends Component {
                         texts: [
                             {
                                 text: '5',
-                                visible: 'y'
+                                crossed: 'y'
                             },
                             {
                                 text: '2',
@@ -152,13 +131,10 @@ class Sub extends Component {
                         type: 'textline',
                         texts: [
                             {
-                                text: '5',
-                                visible: 'y'
+                                text: '0'
                             },
                             {
-                                text: '2',
-                                visible: 'n',
-                                strikeThrough: 'y'
+                                text: '6'
                             }
                         ]
                     },
@@ -252,20 +228,6 @@ class Sub extends Component {
     }
 
     check() {
-        this.userAnswer = ''
-        this.inputs.map(e => {
-            if (e) {
-                let c = e.value.toString();
-                return this.userAnswer += (c === '' ? 'x' : c);
-            }
-        })
-
-        console.log(' this.userAnswer  this.props.sum.answer.answer ' + this.userAnswer + '  ' + this.props.sum.answer.answer)
-        if (this.userAnswer === this.props.sum.answer.answer) {
-            this.answerCorrect = true;
-        } else {
-            this.answerCorrect = false;
-        }
         this.showAnswer = true;
     }
 
@@ -359,9 +321,9 @@ class Sub extends Component {
         xStart += this.LETTER_WIDTH;
 
         let texts = text.texts.map((e, i) => {
-            if (e.text === 'x')
-                return;
-            return <text key={i} x={xStart + i * this.LETTER_WIDTH} y={y} style={{ fill: 'black', fontSize: text.size ? this.SMALL_FONT_HEIGHT : this.BIG_FONT_HEIGHT, visibility: e.visible ? 'visible' : 'hidden', textDecoration: e.crossed ? 'line-through' : 'none', textDecorationColor: e.crossed ? 'red' : 'black', textAnchor: 'middle' }}>{e.text} </text>
+            console.log('this.showAnswer ' + this.showAnswer  + ' e.answer: ' + text.answer)
+            let hidden = this.showAnswer && text.answer === 'y' ? false : e.hidden;
+            return <text key={i} x={xStart + i * this.LETTER_WIDTH} y={y} style={{ fill: 'black', fontSize: text.size ? this.SMALL_FONT_HEIGHT : this.BIG_FONT_HEIGHT, visibility: hidden ? 'hidden' : 'visible', textDecoration: e.crossed ? 'line-through' : 'none', textDecorationColor: e.crossed ? 'red' : 'black', textAnchor: 'middle' }}>{e.text} </text>
         });
         return <g key={this.g++}> {operation} {texts} </g>
     }
@@ -381,7 +343,7 @@ class Sub extends Component {
                         'sum1', 'blueBorder')}>
                         <Index index='Q' />
                         <svg ref={'sum' + ++this.svgs} style={{ paddingLeft: '20px' }}>
-                            {this.Y = this.Y_START} {this.X = this.X_START} {this.inputs = []}
+                            {this.Y = this.Y_START} {this.X = this.X_START} }
                             {
                                 e.steps.map((l, i) => {
                                     switch (l.type) {
