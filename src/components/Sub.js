@@ -239,6 +239,7 @@ class Sub extends Component {
                     <svg ref="problem" style={{ paddingLeft: '20px' }}>
                         {this.Y = this.Y_START} {this.X = this.X_START} {this.inputs = []}
                         {
+                            
                             sum.map((e, i) => {
                                 switch (e.type) {
                                     case 'textline':
