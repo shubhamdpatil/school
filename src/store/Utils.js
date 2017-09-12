@@ -9,6 +9,19 @@ export function getNumbers(digits, size) {
     return operands;
 }
 
+/* JSON.stringify = function (o, function(key, value) {
+    if (typeof value === 'object' && value !== null) {
+        if (cache.indexOf(value) !== -1) {
+            // Circular reference found, discard key
+            return;
+        }
+        // Store value in our collection
+        cache.push(value);
+    }
+    return value;
+})
+ */
+
 export function randomNumber(digits) {
     let range = rangeForDigits(digits);
     let number = getRandomIntInclusive(range[0], range[1])
