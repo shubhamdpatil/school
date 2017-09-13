@@ -202,7 +202,7 @@ class Sub extends Component {
                     ]]
             }
         ]
-        this.getSum();
+        this.sums = this.getSum();
     }
 
     numberLine(e, addonProperty = null) {
@@ -274,14 +274,33 @@ class Sub extends Component {
         return result;
     }
 
+    isArraySame(array1, array2) {
+        /*  return (array1.length == array2.length) && array1.every(function (element, index) {
+             return element === array2[index];
+         });
+  */
+        let notEqualIndex;
+        let equal = array1.every(function (element, index) {
+            notEqualIndex = index;
+            return element === array2[index];
+        });
+
+        return {
+            equal,
+            notEqualIndex
+        }
+    }
+
     getSum() {
-        let num1 = '6001', num2 = '0038';
+        let num1 = '602', num2 = '036';
         //let d1 = [7, 0, 1, 0, 6], d2 = [0, 0, 2, 5, 6];
         let d1 = num1.toString().split('').map((e) => (+e))  //[7, 0, 1, 9];
         let d2 = num2.toString().split('').map((e) => (+e))  //[7, 0, 1, 9];
+        const numTwo = num2.toString().split('').map((e) => (+e))  //[7, 0, 1, 9];
         let lastd1 = [...d1];
         let answer = [];
-        let d2Reverse = d2.reverse();
+        let d2org = [...d2];
+        d2.reverse();
         let answerRows = [];
         for (let d of d2) {
             let newD1 = this.getSum2(lastd1, d);
@@ -290,26 +309,127 @@ class Sub extends Component {
             answer.push(lastd1[lastd1.length - 1] - d);
             lastd1 = lastd1.slice(0, lastd1.length - 1);
         }
-        console.log('answer: ' + answer.reverse(), ' correctAnswer: ' +
-            (parseInt(num1, 10) - parseInt(num2, 10)) + ' answerRows: ' + JSON.stringify(answerRows));
 
         let sums = [];
+        let lasttextline = [...d1]
         sums = answerRows.map(s => {
             let sum = {}
             sum.type = 'answer'
-            sum.textlines = s.map(t => {
+            sum.textlines = s.map((t, j) => {
+                //  console.log('lasttextline: ' + lasttextline + ' t:' + t)
+                // console.log('isArraySame: ' + JSON.stringify(this.isArraySame(t, lasttextline)))
+                let borrowIndex = this.isArraySame(t, lasttextline);
                 let textline = {};
                 textline.type = 'textline'
-                textline.texts = t.map(d => {
+                sum.digitsLength = t.length;
+                textline.texts = t.map((d, i) => {
+                    ///   if()
+                    /*  let crossed = 'n'
+                     if (j < s.length - 1 && (!borrowIndex.equal && (i === borrowIndex.notEqualIndex) || i === borrowIndex.notEqualIndex + 1)) {
+                         console.log('crsossed')
+                         crossed = 'y'
+                     } */
+                    return {
+                        text: d.toString(),
+/*                         crossed
+ */                    }
+                })
+                //   console.log('lasttextline: ' + lasttextline);
+                lasttextline = [...t]
+                return textline;
+            })
+            sum.answer = lasttextline[lasttextline.length - 1] - d2org[lasttextline.length - 1]
+            return sum;
+        })
+
+        {
+            let textline = {};
+            textline.type = 'textline'
+            let firstAnswerRow = answerRows[0][0];
+            let borrowIndex = this.isArraySame(firstAnswerRow, d1);
+            textline.texts = d1.map((d, i) => {
+                /*  let crossed = 'n'
+                 if (!borrowIndex.equal && (i === borrowIndex.notEqualIndex) || i === borrowIndex.notEqualIndex + 1) {
+                     crossed = 'y'
+                 } */
+                return {
+                    text: d.toString(),
+/*                     crossed
+ */                }
+            })
+            sums[0].textlines.unshift(textline)
+        }
+
+        for (let s of sums) {
+            s.textlines.reverse();
+        }
+
+        for (let s of sums) {
+            for (let i = 0; i < s.textlines.length - 1; i++) {
+                let firstline = s.textlines[i];
+                let nextline = s.textlines[i + 1];
+                firstline.texts.forEach(function (element, index) {
+                    console.log('element.text: ' + element.text + '  nextline.texts[index].text: ' + nextline.texts[index].text)
+                    if (element.text !== nextline.texts[index].text) {
+                        nextline.texts[index].crossed = 'y'
+                        console.log('crossed ')
+                    } else {
+
+                    }
+                    if (element.text === nextline.texts[index].text) {
+                        if (element.texts[index].crossed = 'y')
+                    }
+                })
+                console.log('firstline: ' + JSON.stringify(firstline))
+                console.log('nextline: ' + JSON.stringify(nextline))
+            }
+        }
+
+
+        {
+            let textline = {};
+            textline.type = 'textline'
+            textline.operation = '-'
+            textline.texts = numTwo.map((d, i) => {
+                return {
+                    text: d.toString()
+                }
+            })
+            sums[0].textlines.push(textline)
+        }
+
+        {
+            sums[0].textlines.push({ type: 'line' });
+        }
+
+        {
+            let lastAnswer = [];
+            for (let s of sums) {
+                let textline = {};
+                textline.type = 'textline'
+                textline.justified = 'right';
+                textline.answerLine = 'y';
+                lastAnswer.unshift(s.answer);
+                textline.texts = lastAnswer.map((d, i) => {
                     return {
                         text: d.toString()
                     }
                 })
-                return textline;
-            })
-            return sum;
-        })
-        console.log('sums: ' + JSON.stringify(sums))
+                console.log('numTwo.length:  ' + + numTwo.length + ' textline.texts.length ' + textline.texts.length)
+                let blankSpaces = numTwo.length - textline.texts.length;
+                for (let i = 0; i < blankSpaces; i++) {
+                    console.log('called.... ' + i)
+                    textline.texts.unshift({
+                        text: '0',
+                        hidden: 'y'
+                    })
+                }
+                // textline.texts.unshift('x'.repeat(numTwo.length - textline.texts.length))
+                s.textlines.push(textline);
+                console.log('s.textline: ' + JSON.stringify(textline))
+            }
+        }
+        return sums;
     }
 
     getSum2(d1, d) {
@@ -395,7 +515,7 @@ class Sub extends Component {
         for (let i = 1; i <= this.svgs; i++) {
             let el = findDOMNode(this.refs['sum' + i]);
             let bbox = el.getBBox();
-            el.setAttributeNS(null, 'width', bbox.width + 10)
+            el.setAttributeNS(null, 'width', bbox.width + 100)
             el.setAttributeNS(null, 'height', bbox.height + 20)
         }
     }
@@ -448,7 +568,7 @@ class Sub extends Component {
 
         let texts = text.texts.map((e, i) => {
             let hidden = this.showAnswer && text.answer === 'y' ? false : e.hidden;
-            return <text key={i} x={xStart + i * this.LETTER_WIDTH} y={y} style={{ fill: 'black', fontSize: text.size ? this.SMALL_FONT_HEIGHT : this.BIG_FONT_HEIGHT, visibility: hidden ? 'hidden' : 'visible', textDecoration: e.crossed ? 'line-through' : 'none', textDecorationColor: e.crossed ? 'red' : 'black', textAnchor: 'middle' }}>{e.text} </text>
+            return <text key={i} x={xStart + i * this.LETTER_WIDTH} y={y} style={{ fill: 'black', fontSize: text.size ? this.SMALL_FONT_HEIGHT : this.BIG_FONT_HEIGHT, visibility: hidden ? 'hidden' : 'visible', textDecoration: e.crossed === 'y' ? 'line-through' : 'none', textDecorationColor: e.crossed ? 'red' : 'black', textAnchor: 'middle' }}>{e.text} </text>
         });
         return <g key={this.g++}> {operation} {texts} </g>
     }
@@ -459,57 +579,82 @@ class Sub extends Component {
             answerCircleColor = this.answerCorrect ? 'green' : 'red';
         }
         this.svgs = 0;
+
         return (
             <div className="sumContainer" style={{ display: 'flex', margin: '20px' }}>
-                {this.sum.map((e, i) => {
-                    return e.type === 'problem' ?
-                        <div key={i} >
-                            <div className={classNames(
-                                'sum1', 'blueBorder')}>
-                                <Index index='Q' />
-                                <svg ref={'sum' + ++this.svgs} style={{ paddingLeft: '20px' }}>
-                                    {this.Y = this.Y_START} {this.X = this.X_START} }
+                {this.sums.map((s, i) => {
+                    return <div key={i} className={classNames('sum1', 'greenBorder')}>
+                        <Index index='A' />
+                        <svg ref={'sum' + ++this.svgs} style={{ paddingLeft: '20px' }}>
+                            {this.Y = this.Y_START} {this.X = this.X_START} {this.inputs = []}
                             {
-                                        e.steps.map((l, i) => {
-                                            switch (l.type) {
-                                                case 'textline':
-                                                    return this.textline(l);
-                                                case 'line':
-                                                    return this.line(3);
-                                                default:
-                                                    break;
-                                            }
-                                        })
+                                s.textlines.map((l) => {
+                                    switch (l.type) {
+                                        case 'textline':
+                                            return this.textline(l);
+                                        case 'line':
+                                            return this.line(3);
+                                        default:
+                                            break;
                                     }
-                                </svg>
-                            </div>
-                        </div>
-                        :
-                        <div key={i} style={{ display: 'flex', flexDirection: 'column' }}>
-                            {e.answers.map((a, j) => {
-                                return <div key={j} className={classNames('sum1', 'greenBorder')}>
-                                    <Index index='A' />
-                                    <svg ref={'sum' + ++this.svgs} style={{ paddingLeft: '20px' }}>
-                                        {this.Y = this.Y_START} {this.X = this.X_START} {this.inputs = []}
-                                        {
-                                            a.map((l) => {
-                                                switch (l.type) {
-                                                    case 'textline':
-                                                        return this.textline(l);
-                                                    case 'line':
-                                                        return this.line(3);
-                                                    default:
-                                                        break;
-                                                }
-                                            })
-                                        }
-                                    </svg>
-                                </div>
-                            })}
-                        </div>
+                                })
+                            }
+                        </svg>
+                    </div>
                 })}
-            </div>
-        )
+            </div>)
+
+        /*  return (
+             <div className="sumContainer" style={{ display: 'flex', margin: '20px' }}>
+                 {this.sum.map((e, i) => {
+                     return e.type === 'problem' ?
+                         <div key={i} >
+                             <div className={classNames(
+                                 'sum1', 'blueBorder')}>
+                                 <Index index='Q' />
+                                 <svg ref={'sum' + ++this.svgs} style={{ paddingLeft: '20px' }}>
+                                     {this.Y = this.Y_START} {this.X = this.X_START} }
+                             {
+                                         e.steps.map((l, i) => {
+                                             switch (l.type) {
+                                                 case 'textline':
+                                                     return this.textline(l);
+                                                 case 'line':
+                                                     return this.line(3);
+                                                 default:
+                                                     break;
+                                             }
+                                         })
+                                     }
+                                 </svg>
+                             </div>
+                         </div>
+                         :
+                         <div key={i} style={{ display: 'flex', flexDirection: 'column' }}>
+                             {e.answers.map((a, j) => {
+                                 return <div key={j} className={classNames('sum1', 'greenBorder')}>
+                                     <Index index='A' />
+                                     <svg ref={'sum' + ++this.svgs} style={{ paddingLeft: '20px' }}>
+                                         {this.Y = this.Y_START} {this.X = this.X_START} {this.inputs = []}
+                                         {
+                                             a.map((l) => {
+                                                 switch (l.type) {
+                                                     case 'textline':
+                                                         return this.textline(l);
+                                                     case 'line':
+                                                         return this.line(3);
+                                                     default:
+                                                         break;
+                                                 }
+                                             })
+                                         }
+                                     </svg>
+                                 </div>
+                             })}
+                         </div>
+                 })}
+             </div>
+         ) */
     }
 }
 
