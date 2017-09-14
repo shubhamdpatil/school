@@ -467,10 +467,32 @@ class Sub extends Component {
                 }
             }
         }
+
+        for (let i = 0; i < newSums.length; i++) {
+            const answerColor = 'blue';
+            let lowestVisibleIndex = this.getLowestVisibleIndex(newSums[i].textlines, i);
+            let largestVisibleIndex = this.getLargestVisibleIndex(newSums[i].textlines, i)
+
+            newSums[i].textlines[lowestVisibleIndex].texts[newSums.length - 1 - i].fill = answerColor;
+            newSums[i].textlines[largestVisibleIndex].texts[newSums.length - 1 - i].fill = answerColor;
+            let answerLine = this.getAnswerLine(newSums[i].textlines);
+            answerLine.texts[newSums.length - 1 - i].fill = answerColor;
+
+            newSums[i].textlines[lowestVisibleIndex].texts[newSums.length - 1 - i].weight = 'bold';
+            newSums[i].textlines[largestVisibleIndex].texts[newSums.length - 1 - i].weight = 'bold';
+            answerLine.texts[newSums.length - 1 - i].weight = 'bold';
+        }
         return newSums;
     }
 
-
+    getAnswerLine(textlines) {
+        for (let i = 0; i < textlines.length; i++) {
+            if (textlines[i].hasOwnProperty('answerLine') && textlines[i].answerLine === 'y') {
+                return textlines[i];
+            }
+        }
+        return null;
+    }
 
     getLowestVisibleIndex(textlines, column) {
         let lowestVisibleIndex = -1;
@@ -503,6 +525,22 @@ class Sub extends Component {
             }
         }
         return largetHiddenIndex;
+    }
+
+    getLargestVisibleIndex(textlines, column) {
+        let largetVisibleIndex = -1;
+        for (let i = 0; i < textlines.length; i++) {
+            if (textlines[i].texts && textlines[i].texts[column]) {
+                if (textlines[i].hasOwnProperty('answerLine') && textlines[i].answerLine === 'y') {
+                    break;
+                }
+                let t = textlines[i].texts[column]
+                if (!t.hasOwnProperty('hidden') || t.hidden === 'n') {
+                    largetVisibleIndex = i;
+                }
+            }
+        }
+        return largetVisibleIndex;
     }
 
     addDummyDigits(textlines, length) {
@@ -646,7 +684,7 @@ class Sub extends Component {
 
         let texts = text.texts.map((e, i) => {
             let hidden = this.showAnswer && text.answer === 'y' ? false : e.hidden;
-            return <text key={i} x={xStart + i * this.LETTER_WIDTH} y={y} style={{ fill: 'black', fontSize: text.size ? this.SMALL_FONT_HEIGHT : this.BIG_FONT_HEIGHT, visibility: hidden ? 'hidden' : 'visible', textDecoration: e.crossed === 'y' ? 'line-through' : 'none', textDecorationColor: e.crossed ? 'red' : 'black', textAnchor: 'middle' }}>{e.text} </text>
+            return <text key={i} x={xStart + i * this.LETTER_WIDTH} y={y} style={{ fill: 'black', fontSize: text.size ? this.SMALL_FONT_HEIGHT : this.BIG_FONT_HEIGHT, visibility: hidden ? 'hidden' : 'visible', textDecoration: e.crossed === 'y' ? 'line-through' : 'none', textDecorationColor: e.crossed ? 'red' : 'black', textAnchor: 'middle', fill: e.fill ? e.fill : 'black', fontWeight: e.weight ? e.weight : 'normal' }}>{e.text} </text>
         });
         return <g key={this.g++}> {operation} {texts} </g>
     }
