@@ -310,6 +310,7 @@ class Sub extends Component {
             sum.textlines = s.map((t, j) => {
                 let textline = {};
                 textline.type = 'textline'
+                textline.size = this.SMALL_FONT_HEIGHT
                 sum.digitsLength = t.length;
                 textline.texts = t.map((d, i) => {
                     ///   if()
@@ -429,8 +430,6 @@ class Sub extends Component {
                     }
                     for (let i = 0; i < s.textlines.length; i++) {
                         for (let l2 of newS.textlines) {
-                            console.log('s.textlines[i]: ' + JSON.stringify(s.textlines[i].texts))
-                            console.log('l2.texts: ' + JSON.stringify(l2.texts))
                             if (l2.texts && this.isArraySame(s.textlines[i].texts, l2.texts)) {
                                 s.textlines.splice(i, 1)
                             }
@@ -455,22 +454,57 @@ class Sub extends Component {
                 newSums.push(newS)
             }
         }
+
+        for (let s of newSums) {
+            for (let i = 0; i < numTwo.length; i++) {
+                let largetHiddenIndex = this.getLargestHiddenIndex(s.textlines, i)
+                let lowestVisibleIndex = this.getLowestVisibleIndex(s.textlines, i)
+                if (largetHiddenIndex !== -1 && lowestVisibleIndex !== -1 && largetHiddenIndex > lowestVisibleIndex) {
+                    let temp1 = s.textlines[largetHiddenIndex].texts[i]
+                    let temp2 = s.textlines[lowestVisibleIndex].texts[i]
+                    s.textlines[largetHiddenIndex].texts[i] = temp2;
+                    s.textlines[lowestVisibleIndex].texts[i] = temp1;
+                }
+            }
+        }
         return newSums;
     }
 
-    getLowestVisibleIndex(sum, column) {
-        for (let i = 0; i < sum.textlines; i++) {
-            let t = sum.textlines.texts[column]
-            if (t.hidden === 'n') {
-                
+
+
+    getLowestVisibleIndex(textlines, column) {
+        let lowestVisibleIndex = -1;
+        for (let i = 0; i < textlines.length; i++) {
+            if (textlines[i].texts && textlines[i].texts[column]) {
+                if (textlines[i].hasOwnProperty('answerLine') && textlines[i].answerLine === 'y') {
+                    break;
+                }
+                let t = textlines[i].texts[column]
+                if (!t.hasOwnProperty('hidden') || t.hidden === 'n') {
+                    lowestVisibleIndex = i;
+                    break;
+                }
             }
         }
+        return lowestVisibleIndex;
     }
 
-    getLargestHiddenIndex() {
+    getLargestHiddenIndex(textlines, column) {
+        let largetHiddenIndex = -1;
+        for (let i = 0; i < textlines.length; i++) {
+            if (textlines[i].texts && textlines[i].texts[column]) {
+                if (textlines[i].hasOwnProperty('answerLine') && textlines[i].answerLine === 'y') {
+                    break;
+                }
+                let t = textlines[i].texts[column]
+                if (t.hasOwnProperty('hidden') && t.hidden === 'y') {
+                    largetHiddenIndex = i;
+                }
+            }
+        }
+        return largetHiddenIndex;
+    }
 
-    }   
-    
     addDummyDigits(textlines, length) {
         for (let l of textlines) {
             let blankSpaces = length - l.texts.length;
