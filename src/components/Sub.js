@@ -5,6 +5,7 @@ import correctAnswer from './check3.png'
 import wrongAnswer from './wrong-answer.png'
 import { findDOMNode } from 'react-dom';
 import classNames from 'classnames';
+import { cloneDeep } from 'lodash';
 const util = require('util')
 //const Snap = require(`imports-loader?this=>window,fix=>module.exports=0!snapsvg/dist/snap.svg.js`);
 
@@ -215,7 +216,6 @@ class Sub extends Component {
                 digit = Object.assign(digit, addonProperty)
             return digit;
         })
-        console.log('line: ' + util.inspect(line, { showHidden: false, depth: 4 }));
         return line;
     }
 
@@ -269,7 +269,6 @@ class Sub extends Component {
             } else {
                 result.digits.push(r);
             }
-            console.log('r: ' + r)
         }
         return result;
     }
@@ -279,16 +278,9 @@ class Sub extends Component {
              return element === array2[index];
          });
   */
-        let notEqualIndex;
-        let equal = array1.every(function (element, index) {
-            notEqualIndex = index;
-            return element === array2[index];
+        return array1.every(function (element, index) {
+            return element.text === array2[index].text;
         });
-
-        return {
-            equal,
-            notEqualIndex
-        }
     }
 
     getSum() {
@@ -316,9 +308,6 @@ class Sub extends Component {
             let sum = {}
             sum.type = 'answer'
             sum.textlines = s.map((t, j) => {
-                //  console.log('lasttextline: ' + lasttextline + ' t:' + t)
-                // console.log('isArraySame: ' + JSON.stringify(this.isArraySame(t, lasttextline)))
-                let borrowIndex = this.isArraySame(t, lasttextline);
                 let textline = {};
                 textline.type = 'textline'
                 sum.digitsLength = t.length;
@@ -326,7 +315,6 @@ class Sub extends Component {
                     ///   if()
                     /*  let crossed = 'n'
                      if (j < s.length - 1 && (!borrowIndex.equal && (i === borrowIndex.notEqualIndex) || i === borrowIndex.notEqualIndex + 1)) {
-                         console.log('crsossed')
                          crossed = 'y'
                      } */
                     return {
@@ -334,7 +322,6 @@ class Sub extends Component {
 /*                         crossed
  */                    }
                 })
-                //   console.log('lasttextline: ' + lasttextline);
                 lasttextline = [...t]
                 return textline;
             })
@@ -346,7 +333,6 @@ class Sub extends Component {
             let textline = {};
             textline.type = 'textline'
             let firstAnswerRow = answerRows[0][0];
-            let borrowIndex = this.isArraySame(firstAnswerRow, d1);
             textline.texts = d1.map((d, i) => {
                 /*  let crossed = 'n'
                  if (!borrowIndex.equal && (i === borrowIndex.notEqualIndex) || i === borrowIndex.notEqualIndex + 1) {
@@ -369,19 +355,18 @@ class Sub extends Component {
                 let firstline = s.textlines[i];
                 let nextline = s.textlines[i + 1];
                 firstline.texts.forEach(function (element, index) {
-                    console.log('element.text: ' + element.text + '  nextline.texts[index].text: ' + nextline.texts[index].text)
                     if (element.text !== nextline.texts[index].text) {
                         nextline.texts[index].crossed = 'y'
-                        console.log('crossed ')
                     } else {
 
                     }
                     if (element.text === nextline.texts[index].text) {
-                        if (element.texts[index].crossed = 'y')
+                        element.hidden = 'y';
+                        if (element.crossed === 'y') {
+                            nextline.texts[index].crossed = 'y';
+                        }
                     }
                 })
-                console.log('firstline: ' + JSON.stringify(firstline))
-                console.log('nextline: ' + JSON.stringify(nextline))
             }
         }
 
@@ -415,10 +400,8 @@ class Sub extends Component {
                         text: d.toString()
                     }
                 })
-                console.log('numTwo.length:  ' + + numTwo.length + ' textline.texts.length ' + textline.texts.length)
                 let blankSpaces = numTwo.length - textline.texts.length;
                 for (let i = 0; i < blankSpaces; i++) {
-                    console.log('called.... ' + i)
                     textline.texts.unshift({
                         text: '0',
                         hidden: 'y'
@@ -426,10 +409,78 @@ class Sub extends Component {
                 }
                 // textline.texts.unshift('x'.repeat(numTwo.length - textline.texts.length))
                 s.textlines.push(textline);
-                console.log('s.textline: ' + JSON.stringify(textline))
             }
         }
-        return sums;
+
+
+        let newSums = [];
+        {
+            let previousSum = null;
+            for (const s of sums) {
+                let newS = null;
+                if (previousSum) {
+                    newS = cloneDeep(previousSum)
+                    //newS = { ...previousSum }
+                    for (let i = 0; i < newS.textlines.length; i++) {
+                        const l = newS.textlines[i]
+                        if (l.hasOwnProperty('answerLine')) {
+                            newS.textlines.splice(i, 1)
+                        }
+                    }
+                    for (let i = 0; i < s.textlines.length; i++) {
+                        for (let l2 of newS.textlines) {
+                            console.log('s.textlines[i]: ' + JSON.stringify(s.textlines[i].texts))
+                            console.log('l2.texts: ' + JSON.stringify(l2.texts))
+                            if (l2.texts && this.isArraySame(s.textlines[i].texts, l2.texts)) {
+                                s.textlines.splice(i, 1)
+                            }
+                        }
+                    }
+
+                    let answerLine = null;
+                    for (let i = 0; i < s.textlines.length; i++) {
+                        const l = s.textlines[i]
+                        if (l.hasOwnProperty('answerLine')) {
+                            answerLine = s.textlines.splice(i, 1)
+                        }
+                    }
+                    this.addDummyDigits(s.textlines, numTwo.length)
+                    newS.textlines = s.textlines.concat(newS.textlines)
+                    newS.textlines = newS.textlines.concat(answerLine);
+                } else {
+                    //newS = { ...s };
+                    newS = cloneDeep(s);
+                }
+                previousSum = newS;
+                newSums.push(newS)
+            }
+        }
+        return newSums;
+    }
+
+    getLowestVisibleIndex(sum, column) {
+        for (let i = 0; i < sum.textlines; i++) {
+            let t = sum.textlines.texts[column]
+            if (t.hidden === 'n') {
+                
+            }
+        }
+    }
+
+    getLargestHiddenIndex() {
+
+    }   
+    
+    addDummyDigits(textlines, length) {
+        for (let l of textlines) {
+            let blankSpaces = length - l.texts.length;
+            for (let i = 0; i < blankSpaces; i++) {
+                l.texts.push({
+                    text: '0',
+                    hidden: 'y'
+                })
+            }
+        }
     }
 
     getSum2(d1, d) {
@@ -460,7 +511,6 @@ class Sub extends Component {
         let num1 = 1902;
         let num2 = 398;
         let d1 = num1.toString().split('').map((e) => (+e))  //[7, 0, 1, 9];
-        console.log('d1: ' + JSON.stringify(d1))
         let d2 = num2.toString();
         d2 = '0'.repeat(d1.length - d2.length) + d2;
         d2 = d2.split('').map((e) => (+e))  //[7, 0, 1, 9];
@@ -471,12 +521,9 @@ class Sub extends Component {
             o.push(s)
             s = length === 0 ? d2 : d2.slice(0, d1.length - length);
             o.push(s)
-            console.log('o: ' + o);
             let r = this.sub(o, d1.length - length, borrow);
-            //console.log('r: ' + util.inspect(r, true, null))
             length += r.digits.length;
             borrow = r.digits[r.digits.length - 1][3]
-            console.log('r: ' + JSON.stringify(r) + ' length: ' + length + ' r.digits.length: ' + r.digits.length + ' borrow: ' + borrow)
             for (let d of r.digits) {
                 calculatedDiff.push(d[2])
             }
@@ -486,7 +533,6 @@ class Sub extends Component {
         for (let d of calculatedDiff) {
             number += d;
         }
-        console.log('number is : ' + parseInt(number, 10) + ' correct answer: ' + (num1 - num2))
         return;
 
         let operands = ['52', '46'], answer = '06';
@@ -502,8 +548,6 @@ class Sub extends Component {
         });
 
         problem.steps.push(this.numberLine(answer, { hidden: 'y' }));
-        console.log('operandLines: ' + util.inspect(problem, true, null));
-        //     console.log('operandLines: ' + JSON.stringify(problem));
 
     }
 
