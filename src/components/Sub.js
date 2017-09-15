@@ -285,14 +285,13 @@ class Sub extends Component {
 
     getSum() {
         let num1 = '602', num2 = '036';
-        //let d1 = [7, 0, 1, 0, 6], d2 = [0, 0, 2, 5, 6];
         let d1 = num1.toString().split('').map((e) => (+e))  //[7, 0, 1, 9];
         let d2 = num2.toString().split('').map((e) => (+e))  //[7, 0, 1, 9];
+        d2.reverse();
         const numTwo = num2.toString().split('').map((e) => (+e))  //[7, 0, 1, 9];
         let lastd1 = [...d1];
         let answer = [];
         let d2org = [...d2];
-        d2.reverse();
         let answerRows = [];
         for (let d of d2) {
             let newD1 = this.getSum2(lastd1, d);
@@ -313,15 +312,9 @@ class Sub extends Component {
                 textline.size = this.SMALL_FONT_HEIGHT
                 sum.digitsLength = t.length;
                 textline.texts = t.map((d, i) => {
-                    ///   if()
-                    /*  let crossed = 'n'
-                     if (j < s.length - 1 && (!borrowIndex.equal && (i === borrowIndex.notEqualIndex) || i === borrowIndex.notEqualIndex + 1)) {
-                         crossed = 'y'
-                     } */
                     return {
-                        text: d.toString(),
-/*                         crossed
- */                    }
+                        text: d.toString()
+                    }
                 })
                 lasttextline = [...t]
                 return textline;
@@ -335,14 +328,9 @@ class Sub extends Component {
             textline.type = 'textline'
             let firstAnswerRow = answerRows[0][0];
             textline.texts = d1.map((d, i) => {
-                /*  let crossed = 'n'
-                 if (!borrowIndex.equal && (i === borrowIndex.notEqualIndex) || i === borrowIndex.notEqualIndex + 1) {
-                     crossed = 'y'
-                 } */
                 return {
-                    text: d.toString(),
-/*                     crossed
- */                }
+                    text: d.toString()
+                }
             })
             sums[0].textlines.unshift(textline)
         }
@@ -408,7 +396,6 @@ class Sub extends Component {
                         hidden: 'y'
                     })
                 }
-                // textline.texts.unshift('x'.repeat(numTwo.length - textline.texts.length))
                 s.textlines.push(textline);
             }
         }
@@ -421,7 +408,6 @@ class Sub extends Component {
                 let newS = null;
                 if (previousSum) {
                     newS = cloneDeep(previousSum)
-                    //newS = { ...previousSum }
                     for (let i = 0; i < newS.textlines.length; i++) {
                         const l = newS.textlines[i]
                         if (l.hasOwnProperty('answerLine')) {
@@ -447,7 +433,6 @@ class Sub extends Component {
                     newS.textlines = s.textlines.concat(newS.textlines)
                     newS.textlines = newS.textlines.concat(answerLine);
                 } else {
-                    //newS = { ...s };
                     newS = cloneDeep(s);
                 }
                 previousSum = newS;
