@@ -206,104 +206,27 @@ class Sub extends Component {
         this.sums = this.getSum();
     }
 
-    numberLine(e, addonProperty = null) {
-        let line = {};
-        line.type = 'textline';
-        line.texts = e.toString().split('').map(d => {
-            let digit = {};
-            digit.text = (d).toString();
-            if (addonProperty)
-                digit = Object.assign(digit, addonProperty)
-            return digit;
-        })
-        return line;
-    }
-
-    getSubStep(d1, d2, borrow) {
-        let results = [];
-        let borrowedFor0 = false;
-
-        if (d1 === 0) {
-            d1 = d1 + 10;
-            borrowedFor0 = true;
-        }
-
-        if (borrow) {
-            d1--;
-        }
-
-        if (d2 > d1) {
-            results.push(d1 + 10);
-            results.push(d2)
-            results.push(d1 + 10 - d2)
-            results.push(1)
-        } else {
-            results.push(d1);
-            results.push(d2)
-            results.push(d1 - d2)
-            borrowedFor0 ? results.push(1) : results.push(0)
-        }
-        return results;
-    }
-
-    sub(operands, length, borrow) {
-        let result = {};
-        result.digits = [];
-        let firstBorrow = false;
-        let secondBorrow = false;
-        let borroww = borrow;
-        for (let i = length - 1; i >= 0; i--) {
-            let d1 = operands[0][i];
-            let d2 = operands[1][i];
-            let r = this.getSubStep(d1, d2, borroww);
-            borroww = r[3];
-            if (r[3] === 1) {
-                if (!firstBorrow) {
-                    firstBorrow = true;
-                } else {
-                    secondBorrow = true;
-                }
-            }
-            if (secondBorrow) {
-                break;
-            } else {
-                result.digits.push(r);
-            }
-        }
-        return result;
-    }
-
     isArraySame(array1, array2) {
-        /*  return (array1.length == array2.length) && array1.every(function (element, index) {
-             return element === array2[index];
-         });
-  */
         return array1.every(function (element, index) {
             return element.text === array2[index].text;
         });
     }
 
-    getSum() {
-        let num1 = '602', num2 = '036';
-        let d1 = num1.toString().split('').map((e) => (+e))  //[7, 0, 1, 9];
-        let d2 = num2.toString().split('').map((e) => (+e))  //[7, 0, 1, 9];
-        d2.reverse();
-        const numTwo = num2.toString().split('').map((e) => (+e))  //[7, 0, 1, 9];
-        let lastd1 = [...d1];
-        let answer = [];
-        let d2org = [...d2];
-        let answerRows = [];
-        for (let d of d2) {
-            let newD1 = this.getSum2(lastd1, d);
-            answerRows.push([...newD1]);
-            lastd1 = newD1[newD1.length - 1];
-            answer.push(lastd1[lastd1.length - 1] - d);
-            lastd1 = lastd1.slice(0, lastd1.length - 1);
-        }
-
+    getBorrowLines(minuend, subtrahend) {
         let sums = [];
-        let lasttextline = [...d1]
-        sums = answerRows.map(s => {
+        let lastMinuend = [...minuend]
+        for (let d of subtrahend) {
+            let newMinuends = this.getSum2(lastMinuend, d);
+            sums.push([...newMinuends]);
+            lastMinuend = newMinuends[newMinuends.length - 1];
+            lastMinuend = lastMinuend.slice(0, lastMinuend.length - 1);
+        }
+        return sums;
+    }
+
+    convertBorrowLinesToText(sums, minuend, subtrahend) {
+        let lasttextline = [...minuend]
+        let sumsWithTextlines = sums.map(s => {
             let sum = {}
             sum.type = 'answer'
             sum.textlines = s.map((t, j) => {
@@ -319,26 +242,50 @@ class Sub extends Component {
                 lasttextline = [...t]
                 return textline;
             })
-            sum.answer = lasttextline[lasttextline.length - 1] - d2org[lasttextline.length - 1]
+            sum.answer = lasttextline[lasttextline.length - 1] - subtrahend[lasttextline.length - 1]
             return sum;
         })
+        return sumsWithTextlines;
+    }
 
-        {
-            let textline = {};
-            textline.type = 'textline'
-            let firstAnswerRow = answerRows[0][0];
-            textline.texts = d1.map((d, i) => {
-                return {
-                    text: d.toString()
-                }
-            })
-            sums[0].textlines.unshift(textline)
-        }
+    getSum(minuend = '602', subtrahend = '036') {
+       
+        const minuendArray = minuend.toString().split('').map((e) => (+e))
+        const subtrahendArrayReversed = subtrahend.toString().split('').map((e) => (+e)).reverse()
+        const subtrahendArray = subtrahend.toString().split('').map((e) => (+e))
 
+        let sumsWithoutFormatting = this.getBorrowLines(minuendArray, subtrahendArrayReversed)
+        let sums = this.convertBorrowLinesToText(sumsWithoutFormatting, minuendArray, subtrahendArray)
+        this.addMinuend(sums, minuendArray)
+        this.reverseTextLines(sums)
+        this.crossAndHideDigits(sums)
+        this.addSubtrahend(sums, subtrahendArray)
+        this.addLine(sums);
+        this.addAnswerLine(sums)
+        let newSums = this.mergeSums(sums)
+        this.shiftDigitsToLowerEmptySpace(newSums)
+        this.decorateAnswerColumn(newSums)
+        return newSums;
+    }
+
+    addMinuend(sums, minuend) {
+        let textline = {};
+        textline.type = 'textline'
+        textline.texts = minuend.map((d, i) => {
+            return {
+                text: d.toString()
+            }
+        })
+        sums[0].textlines.unshift(textline)
+    }
+
+    reverseTextLines(sums) {
         for (let s of sums) {
             s.textlines.reverse();
         }
+    }
 
+    crossAndHideDigits(sums) {
         for (let s of sums) {
             for (let i = 0; i < s.textlines.length - 1; i++) {
                 let firstline = s.textlines[i];
@@ -358,49 +305,47 @@ class Sub extends Component {
                 })
             }
         }
+    }
 
-
-        {
+    addSubtrahend(sums, subtrahend) {
+        let textline = {};
+        textline.type = 'textline'
+        textline.operation = '-'
+        textline.texts = subtrahend.map((d, i) => {
+            return {
+                text: d.toString()
+            }
+        })
+        sums[0].textlines.push(textline)
+    }
+    addLine(sums) {
+        sums[0].textlines.push({ type: 'line' });
+    }
+    addAnswerLine(sums) {
+        let lastAnswer = [];
+        for (let s of sums) {
             let textline = {};
             textline.type = 'textline'
-            textline.operation = '-'
-            textline.texts = numTwo.map((d, i) => {
+            textline.justified = 'right';
+            textline.answerLine = 'y';
+            lastAnswer.unshift(s.answer);
+            textline.texts = lastAnswer.map((d, i) => {
                 return {
                     text: d.toString()
                 }
             })
-            sums[0].textlines.push(textline)
-        }
-
-        {
-            sums[0].textlines.push({ type: 'line' });
-        }
-
-        {
-            let lastAnswer = [];
-            for (let s of sums) {
-                let textline = {};
-                textline.type = 'textline'
-                textline.justified = 'right';
-                textline.answerLine = 'y';
-                lastAnswer.unshift(s.answer);
-                textline.texts = lastAnswer.map((d, i) => {
-                    return {
-                        text: d.toString()
-                    }
+            let blankSpaces = sums.length - textline.texts.length;
+            for (let i = 0; i < blankSpaces; i++) {
+                textline.texts.unshift({
+                    text: '0',
+                    hidden: 'y'
                 })
-                let blankSpaces = numTwo.length - textline.texts.length;
-                for (let i = 0; i < blankSpaces; i++) {
-                    textline.texts.unshift({
-                        text: '0',
-                        hidden: 'y'
-                    })
-                }
-                s.textlines.push(textline);
             }
+            s.textlines.push(textline);
         }
+    }
 
-
+    mergeSums(sums) {
         let newSums = [];
         {
             let previousSum = null;
@@ -410,10 +355,12 @@ class Sub extends Component {
                     newS = cloneDeep(previousSum)
                     for (let i = 0; i < newS.textlines.length; i++) {
                         const l = newS.textlines[i]
+                        //remove answer line of previous sum, as new sum will have its own answer line
                         if (l.hasOwnProperty('answerLine')) {
                             newS.textlines.splice(i, 1)
                         }
                     }
+                    // remove duplicate lines, we don't repeat same digits in next line
                     for (let i = 0; i < s.textlines.length; i++) {
                         for (let l2 of newS.textlines) {
                             if (l2.texts && this.isArraySame(s.textlines[i].texts, l2.texts)) {
@@ -422,6 +369,7 @@ class Sub extends Component {
                         }
                     }
 
+                    // remove answer line of this sum, add digits from previous sum to answer of this sum, and then add this answer line to sum
                     let answerLine = null;
                     for (let i = 0; i < s.textlines.length; i++) {
                         const l = s.textlines[i]
@@ -429,7 +377,7 @@ class Sub extends Component {
                             answerLine = s.textlines.splice(i, 1)
                         }
                     }
-                    this.addDummyDigits(s.textlines, numTwo.length)
+                    this.addDummyDigits(s.textlines, sums.length)
                     newS.textlines = s.textlines.concat(newS.textlines)
                     newS.textlines = newS.textlines.concat(answerLine);
                 } else {
@@ -439,9 +387,12 @@ class Sub extends Component {
                 newSums.push(newS)
             }
         }
+        return newSums;
+    }
 
-        for (let s of newSums) {
-            for (let i = 0; i < numTwo.length; i++) {
+    shiftDigitsToLowerEmptySpace(sums) {
+        for (let s of sums) {
+            for (let i = 0; i < sums.length; i++) {
                 let largetHiddenIndex = this.getLargestHiddenIndex(s.textlines, i)
                 let lowestVisibleIndex = this.getLowestVisibleIndex(s.textlines, i)
                 if (largetHiddenIndex !== -1 && lowestVisibleIndex !== -1 && largetHiddenIndex > lowestVisibleIndex) {
@@ -452,22 +403,23 @@ class Sub extends Component {
                 }
             }
         }
+    }
 
-        for (let i = 0; i < newSums.length; i++) {
+    decorateAnswerColumn(sums) {
+        for (let i = 0; i < sums.length; i++) {
             const answerColor = 'blue';
-            let lowestVisibleIndex = this.getLowestVisibleIndex(newSums[i].textlines, i);
-            let largestVisibleIndex = this.getLargestVisibleIndex(newSums[i].textlines, i)
+            let lowestVisibleIndex = this.getLowestVisibleIndex(sums[i].textlines, i);
+            let largestVisibleIndex = this.getLargestVisibleIndex(sums[i].textlines, i)
 
-            newSums[i].textlines[lowestVisibleIndex].texts[newSums.length - 1 - i].fill = answerColor;
-            newSums[i].textlines[largestVisibleIndex].texts[newSums.length - 1 - i].fill = answerColor;
-            let answerLine = this.getAnswerLine(newSums[i].textlines);
-            answerLine.texts[newSums.length - 1 - i].fill = answerColor;
+            sums[i].textlines[lowestVisibleIndex].texts[sums.length - 1 - i].fill = answerColor;
+            sums[i].textlines[largestVisibleIndex].texts[sums.length - 1 - i].fill = answerColor;
+            let answerLine = this.getAnswerLine(sums[i].textlines);
+            answerLine.texts[sums.length - 1 - i].fill = answerColor;
 
-            newSums[i].textlines[lowestVisibleIndex].texts[newSums.length - 1 - i].weight = 'bold';
-            newSums[i].textlines[largestVisibleIndex].texts[newSums.length - 1 - i].weight = 'bold';
-            answerLine.texts[newSums.length - 1 - i].weight = 'bold';
+            sums[i].textlines[lowestVisibleIndex].texts[sums.length - 1 - i].weight = 'bold';
+            sums[i].textlines[largestVisibleIndex].texts[sums.length - 1 - i].weight = 'bold';
+            answerLine.texts[sums.length - 1 - i].weight = 'bold';
         }
-        return newSums;
     }
 
     getAnswerLine(textlines) {
@@ -560,52 +512,6 @@ class Sub extends Component {
             newD1.push(newd1);
         }
         return newD1;
-    }
-
-    getSum1() {
-        let length = 0;
-        let borrow = false;
-        let num1 = 1902;
-        let num2 = 398;
-        let d1 = num1.toString().split('').map((e) => (+e))  //[7, 0, 1, 9];
-        let d2 = num2.toString();
-        d2 = '0'.repeat(d1.length - d2.length) + d2;
-        d2 = d2.split('').map((e) => (+e))  //[7, 0, 1, 9];
-        let calculatedDiff = [];
-        while (length < d1.length) {
-            let o = [];
-            let s = length === 0 ? d1 : d1.slice(0, d1.length - length);
-            o.push(s)
-            s = length === 0 ? d2 : d2.slice(0, d1.length - length);
-            o.push(s)
-            let r = this.sub(o, d1.length - length, borrow);
-            length += r.digits.length;
-            borrow = r.digits[r.digits.length - 1][3]
-            for (let d of r.digits) {
-                calculatedDiff.push(d[2])
-            }
-        }
-        let number = ''
-        calculatedDiff.reverse()
-        for (let d of calculatedDiff) {
-            number += d;
-        }
-        return;
-
-        let operands = ['52', '46'], answer = '06';
-        let problem = {
-            type: 'problem'
-        }
-        problem.steps = operands.map((e) => {
-            return this.numberLine(e);
-        });
-
-        problem.steps.push({
-            type: 'line'
-        });
-
-        problem.steps.push(this.numberLine(answer, { hidden: 'y' }));
-
     }
 
     componentDidMount() {
