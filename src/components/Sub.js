@@ -248,22 +248,26 @@ class Sub extends Component {
         return sumsWithTextlines;
     }
 
-    getSum(minuend = '602', subtrahend = '036') {
-       
+    getSum(minuend = '6000', subtrahend = '0136') {
+
         const minuendArray = minuend.toString().split('').map((e) => (+e))
         const subtrahendArrayReversed = subtrahend.toString().split('').map((e) => (+e)).reverse()
         const subtrahendArray = subtrahend.toString().split('').map((e) => (+e))
 
         let sumsWithoutFormatting = this.getBorrowLines(minuendArray, subtrahendArrayReversed)
+        // console.log('sumsWithoutFormatting: ' + JSON.stringify(sumsWithoutFormatting[0]))
         let sums = this.convertBorrowLinesToText(sumsWithoutFormatting, minuendArray, subtrahendArray)
+        // console.log('sums: ' + JSON.stringify(sums[0]))
         this.addMinuend(sums, minuendArray)
         this.reverseTextLines(sums)
         this.crossAndHideDigits(sums)
+        // console.log('sums: 2 ' + JSON.stringify(sums[0]))
         this.addSubtrahend(sums, subtrahendArray)
         this.addLine(sums);
         this.addAnswerLine(sums)
         let newSums = this.mergeSums(sums)
-        this.shiftDigitsToLowerEmptySpace(newSums)
+        //  console.log('newSums: 1 ' + JSON.stringify(newSums[0]))
+        // this.shiftDigitsToLowerEmptySpace(newSums)
         this.decorateAnswerColumn(newSums)
         return newSums;
     }
@@ -286,24 +290,46 @@ class Sub extends Component {
     }
 
     crossAndHideDigits(sums) {
-        for (let s of sums) {
-            for (let i = 0; i < s.textlines.length - 1; i++) {
-                let firstline = s.textlines[i];
-                let nextline = s.textlines[i + 1];
-                firstline.texts.forEach(function (element, index) {
-                    if (element.text !== nextline.texts[index].text) {
-                        nextline.texts[index].crossed = 'y'
-                    } else {
+        // for (let s of sums) {
+        let s = sums[0]
+        for (let i = 0; i < s.textlines.length - 1; i++) {
+            let firstline = s.textlines[i];
+            let nextline = s.textlines[i + 1];
+            firstline.texts.forEach(function (element, index) {
+                //  console.log('element.text : ' + element.text)
+                //console.log('nextline.texts[index]: ' + nextline.texts[index].text)
+                if (element.text === nextline.texts[index].text) {
+                    element.hidden = 'y';
+                } else {
+                    element.hidden = 'n';
+                    nextline.texts[index].crossed = 'y'
+                }
+                /*
+                if (element.text !== nextline.texts[index].text) {
+                    nextline.texts[index].crossed = 'y'
+                } else {
+                    nextline.texts[index].crossed = 'y'
+                    //                    }
+                    //if (element.text === nextline.texts[index].text) { 
+                    // element.hidden = 'y';
+                    //      if (element.crossed === 'y') {
+                    //      nextline.texts[index].crossed = 'y';
+                    //    }
+                }
+                */
+            })
+        }
+        // }
 
-                    }
-                    if (element.text === nextline.texts[index].text) {
-                        element.hidden = 'y';
-                        if (element.crossed === 'y') {
-                            nextline.texts[index].crossed = 'y';
-                        }
-                    }
-                })
-            }
+
+        for (let i = 0; i < s.textlines.length - 1; i++) {
+            let firstline = s.textlines[i];
+            firstline.texts.forEach(function (element, index) {
+                if (element['hidden'] === 'n') {
+                    
+                } else {
+                }
+            })
         }
     }
 
@@ -391,18 +417,20 @@ class Sub extends Component {
     }
 
     shiftDigitsToLowerEmptySpace(sums) {
-        for (let s of sums) {
-            for (let i = 0; i < sums.length; i++) {
-                let largetHiddenIndex = this.getLargestHiddenIndex(s.textlines, i)
-                let lowestVisibleIndex = this.getLowestVisibleIndex(s.textlines, i)
-                if (largetHiddenIndex !== -1 && lowestVisibleIndex !== -1 && largetHiddenIndex > lowestVisibleIndex) {
-                    let temp1 = s.textlines[largetHiddenIndex].texts[i]
-                    let temp2 = s.textlines[lowestVisibleIndex].texts[i]
-                    s.textlines[largetHiddenIndex].texts[i] = temp2;
-                    s.textlines[lowestVisibleIndex].texts[i] = temp1;
-                }
+        // for (let s of sums) {
+        let s = sums[0]
+        for (let i = 0; i < sums.length; i++) {
+            let largetHiddenIndex = this.getLargestHiddenIndex(s.textlines, i)
+            let lowestVisibleIndex = this.getLowestVisibleIndex(s.textlines, i)
+            console.log('largetHiddenIndex : ' + largetHiddenIndex + ' lowestVisibleIndex: ' + lowestVisibleIndex + ' i:' + i)
+            if (largetHiddenIndex !== -1 && lowestVisibleIndex !== -1 && largetHiddenIndex > lowestVisibleIndex) {
+                let temp1 = s.textlines[largetHiddenIndex].texts[i]
+                let temp2 = s.textlines[lowestVisibleIndex].texts[i]
+                s.textlines[largetHiddenIndex].texts[i] = temp2;
+                s.textlines[lowestVisibleIndex].texts[i] = temp1;
             }
         }
+        //}
     }
 
     decorateAnswerColumn(sums) {
@@ -515,15 +543,25 @@ class Sub extends Component {
     }
 
     componentDidMount() {
+        let ns = 'http://www.w3.org/2000/svg'
+        for (let i = 1; i <= this.svgs; i++) {
+            let el = findDOMNode(this.refs['sum' + i]);
+            let bbox = el.getBBox();
+            console.log('width and height set....')
+            el.setAttributeNS(null, 'width', bbox.width + 100)
+            el.setAttributeNS(null, 'height', bbox.height + 100)
+        }
     }
+
 
     componentDidUpdate(prevProps, prevState) {
         let ns = 'http://www.w3.org/2000/svg'
         for (let i = 1; i <= this.svgs; i++) {
             let el = findDOMNode(this.refs['sum' + i]);
             let bbox = el.getBBox();
+            console.log('width and height set....')
             el.setAttributeNS(null, 'width', bbox.width + 100)
-            el.setAttributeNS(null, 'height', bbox.height + 20)
+            el.setAttributeNS(null, 'height', bbox.height + 100)
         }
     }
 
@@ -574,7 +612,8 @@ class Sub extends Component {
         xStart += this.LETTER_WIDTH;
 
         let texts = text.texts.map((e, i) => {
-            let hidden = this.showAnswer && text.answer === 'y' ? false : e.hidden;
+            // let hidden = this.showAnswer && text.answer === 'y' ? false : e.hidden;
+            let hidden = e.hidden === 'y' ? true : false
             return <text key={i} x={xStart + i * this.LETTER_WIDTH} y={y} style={{ fill: 'black', fontSize: text.size ? this.SMALL_FONT_HEIGHT : this.BIG_FONT_HEIGHT, visibility: hidden ? 'hidden' : 'visible', textDecoration: e.crossed === 'y' ? 'line-through' : 'none', textDecorationColor: e.crossed ? 'red' : 'black', textAnchor: 'middle', fill: e.fill ? e.fill : 'black', fontWeight: e.weight ? e.weight : 'normal' }}>{e.text} </text>
         });
         return <g key={this.g++}> {operation} {texts} </g>
