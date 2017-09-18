@@ -225,7 +225,7 @@ class Sub extends Component {
     }
 
     convertBorrowLinesToText(sums, minuend, subtrahend) {
-        let lasttextline = [...minuend]
+        let lasttextline = cloneDeep(minuend) // [...minuend]
         let sumsWithTextlines = sums.map(s => {
             let sum = {}
             sum.type = 'answer'
@@ -239,7 +239,7 @@ class Sub extends Component {
                         text: d.toString()
                     }
                 })
-                lasttextline = [...t]
+                lasttextline = cloneDeep(t) //[...t]
                 return textline;
             })
             sum.answer = lasttextline[lasttextline.length - 1] - subtrahend[lasttextline.length - 1]
@@ -248,7 +248,7 @@ class Sub extends Component {
         return sumsWithTextlines;
     }
 
-    getSum(minuend = '6000', subtrahend = '0136') {
+    getSum(minuend = '60100', subtrahend = '02136') { //minuend = '6010', subtrahend = '2136'
 
         const minuendArray = minuend.toString().split('').map((e) => (+e))
         const subtrahendArrayReversed = subtrahend.toString().split('').map((e) => (+e)).reverse()
@@ -260,15 +260,23 @@ class Sub extends Component {
         // console.log('sums: ' + JSON.stringify(sums[0]))
         this.addMinuend(sums, minuendArray)
         this.reverseTextLines(sums)
-        this.crossAndHideDigits(sums)
-        // console.log('sums: 2 ' + JSON.stringify(sums[0]))
-        this.addSubtrahend(sums, subtrahendArray)
-        this.addLine(sums);
-        this.addAnswerLine(sums)
+        //  this.crossAndHideDigits(sums)
         let newSums = this.mergeSums(sums)
-        //  console.log('newSums: 1 ' + JSON.stringify(newSums[0]))
-        // this.shiftDigitsToLowerEmptySpace(newSums)
+        this.hideSameDigits(newSums)
+        this.shiftDigitsToLowerEmptySpace(newSums)
+        this.removeHiddenLines(newSums)
+        this.crossDifferentDigits(newSums)
+
+        //this.crossAndHideDigits1(sums)
+
+
+        // console.log('sums: 2 ' + JSON.stringify(sums[0]))
+        this.addSubtrahend(newSums, subtrahendArray)
+        this.addLine(newSums);
+        this.addAnswerLine(newSums)
+        //   let newSums = this.mergeSums(sums)
         this.decorateAnswerColumn(newSums)
+        //  console.log('newSums: 1 ' + JSON.stringify(newSums[0]))
         return newSums;
     }
 
@@ -277,7 +285,8 @@ class Sub extends Component {
         textline.type = 'textline'
         textline.texts = minuend.map((d, i) => {
             return {
-                text: d.toString()
+                text: d.toString(),
+                hidden: 'n'
             }
         })
         sums[0].textlines.unshift(textline)
@@ -289,21 +298,94 @@ class Sub extends Component {
         }
     }
 
+    removeHiddenLines(sums) {
+        for (let s of sums) {
+            let firstline = s.textlines[0];
+            let linesToRemove = [];
+            for (let i = 0; i < s.textlines.length - 1; i++) {
+                let firstline = s.textlines[i];
+                let lineVisible = false;
+                for (let j = 0; j < firstline.texts.length; j++) {
+                    if (firstline.texts[j].hidden === 'n') {
+                        lineVisible = true;
+                        break;
+                    }
+                }
+                if (!lineVisible) {
+                    s.textlines.splice(i, 1)
+                    i--
+                }
+            }
+        }
+    }
+
+    hideSameDigits(sums) {
+        for (let s of sums) {
+            for (let i = 0; i < s.textlines.length - 1; i++) {
+                let firstline = s.textlines[i];
+                let nextline = s.textlines[i + 1];
+                firstline.texts.forEach(function (element, index) {
+                    if (element.text === nextline.texts[index].text) {
+                        element.hidden = 'y';
+                    } else {
+                        element.hidden = 'n';
+                    }
+                })
+                for (let j = 0; j < firstline.texts.length; j++) {
+                    if (firstline.texts[j].hidden === 'n') {
+                        break;
+                    }
+                }
+            }
+        }
+    }
+
+    crossDifferentDigits(sums) {
+        for (let s of sums) {
+            // let s = sums[0]
+
+            for (let i = 0; i < s.textlines.length - 1; i++) {
+                let firstline = s.textlines[i];
+                let nextline = s.textlines[i + 1];
+                firstline.texts.forEach(function (element, index) {
+                    if (element.text !== nextline.texts[index].text) {
+                        nextline.texts[index].crossed = 'y';
+                    } else {
+                        nextline.texts[index].crossed = 'n';
+                    }
+
+                })
+            }
+        }
+    }
+
     crossAndHideDigits(sums) {
         // for (let s of sums) {
         let s = sums[0]
+
+        //    console.log('crossAndHideDigits before 0 : ' + JSON.stringify(s.textlines[0]))
+        //  console.log('crossAndHideDigits before 1 : ' + JSON.stringify(s.textlines[1]))
+
         for (let i = 0; i < s.textlines.length - 1; i++) {
+            //for (let i = 0; i < 1; i++) {
             let firstline = s.textlines[i];
             let nextline = s.textlines[i + 1];
+            //   console.log('firstline: before ' + JSON.stringify(firstline))
+            // console.log('nextline: ' + JSON.stringify(nextline))
+            //  console.log('firstline: ' + JSON.stringify(firstline))
+            //console.log('nextline: ' + JSON.stringify(nextline))
             firstline.texts.forEach(function (element, index) {
                 //  console.log('element.text : ' + element.text)
                 //console.log('nextline.texts[index]: ' + nextline.texts[index].text)
                 if (element.text === nextline.texts[index].text) {
+                    //  console.log('element.text: ' + element.text + '  nextline.texts[index].text: ' + nextline.texts[index].text)
                     element.hidden = 'y';
+                    //  console.log('hidden: ' + element.text + ' for column: ' + i)
                 } else {
                     element.hidden = 'n';
                     nextline.texts[index].crossed = 'y'
                 }
+                //console.log('firstline: after ' + JSON.stringify(firstline))
                 /*
                 if (element.text !== nextline.texts[index].text) {
                     nextline.texts[index].crossed = 'y'
@@ -318,35 +400,89 @@ class Sub extends Component {
                 }
                 */
             })
+            //console.log('orginal line: ' + JSON.stringify(s.textlines[i]))
+            //console.log('modified line: ' + JSON.stringify(firstline))
+            //  console.log(' firstline ffff: ' + JSON.stringify(firstline))
         }
+        // console.log('in firstline: ' + JSON.stringify(sums[0].textlines[0]))
+        //  console.log('crossAndHideDigits after 0 : ' + JSON.stringify(s.textlines[0]))
+        //console.log('crossAndHideDigits after 1 : ' + JSON.stringify(s.textlines[1]))
         // }
 
+    }
 
-        for (let i = 0; i < s.textlines.length - 1; i++) {
+    crossAndHideDigits1(sums) {
+        // for (let s of sums) {
+        let s = sums[0]
+
+        //    console.log('crossAndHideDigits before 0 : ' + JSON.stringify(s.textlines[0]))
+        //  console.log('crossAndHideDigits before 1 : ' + JSON.stringify(s.textlines[1]))
+
+        // for (let i = 0; i < s.textlines.length - 1; i++) {
+        for (let i = 0; i < 1; i++) {
             let firstline = s.textlines[i];
+            let nextline = s.textlines[i + 1];
+            //   console.log('firstline: before ' + JSON.stringify(firstline))
+            // console.log('nextline: ' + JSON.stringify(nextline))
+            //  console.log('firstline: ' + JSON.stringify(firstline))
+            //console.log('nextline: ' + JSON.stringify(nextline))
             firstline.texts.forEach(function (element, index) {
-                if (element['hidden'] === 'n') {
-                    
+                //  console.log('element.text : ' + element.text)
+                //console.log('nextline.texts[index]: ' + nextline.texts[index].text)
+                if (element.text === nextline.texts[index].text) {
+                    //  console.log('element.text: ' + element.text + '  nextline.texts[index].text: ' + nextline.texts[index].text)
+                    element.hidden = 'y';
+                    //  console.log('hidden: ' + element.text + ' for column: ' + i)
                 } else {
+                    element.hidden = 'n';
+                    nextline.texts[index].crossed = 'y'
                 }
+                //console.log('firstline: after ' + JSON.stringify(firstline))
+                /*
+                if (element.text !== nextline.texts[index].text) {
+                    nextline.texts[index].crossed = 'y'
+                } else {
+                    nextline.texts[index].crossed = 'y'
+                    //                    }
+                    //if (element.text === nextline.texts[index].text) { 
+                    // element.hidden = 'y';
+                    //      if (element.crossed === 'y') {
+                    //      nextline.texts[index].crossed = 'y';
+                    //    }
+                }
+                */
             })
+            //console.log('orginal line: ' + JSON.stringify(s.textlines[i]))
+            //console.log('modified line: ' + JSON.stringify(firstline))
+            //  console.log(' firstline ffff: ' + JSON.stringify(firstline))
         }
+        // console.log('in firstline: ' + JSON.stringify(sums[0].textlines[0]))
+        //  console.log('crossAndHideDigits after 0 : ' + JSON.stringify(s.textlines[0]))
+        //console.log('crossAndHideDigits after 1 : ' + JSON.stringify(s.textlines[1]))
+        // }
+
     }
 
     addSubtrahend(sums, subtrahend) {
-        let textline = {};
-        textline.type = 'textline'
-        textline.operation = '-'
-        textline.texts = subtrahend.map((d, i) => {
-            return {
-                text: d.toString()
-            }
-        })
-        sums[0].textlines.push(textline)
+        for (let s of sums) {
+            let textline = {};
+            textline.type = 'textline'
+            textline.operation = '-'
+            textline.texts = subtrahend.map((d, i) => {
+                return {
+                    text: d.toString()
+                }
+            })
+            s.textlines.push(textline)
+        }
     }
+
     addLine(sums) {
-        sums[0].textlines.push({ type: 'line' });
+        for (let s of sums) {
+            s.textlines.push({ type: 'line' });
+        }
     }
+
     addAnswerLine(sums) {
         let lastAnswer = [];
         for (let s of sums) {
@@ -384,17 +520,19 @@ class Sub extends Component {
                         //remove answer line of previous sum, as new sum will have its own answer line
                         if (l.hasOwnProperty('answerLine')) {
                             newS.textlines.splice(i, 1)
+                            break;
                         }
                     }
                     // remove duplicate lines, we don't repeat same digits in next line
-                    for (let i = 0; i < s.textlines.length; i++) {
+                    outerloop: for (let i = 0; i < s.textlines.length; i++) {
                         for (let l2 of newS.textlines) {
                             if (l2.texts && this.isArraySame(s.textlines[i].texts, l2.texts)) {
                                 s.textlines.splice(i, 1)
+                                break outerloop;
                             }
                         }
                     }
-
+                    /* 
                     // remove answer line of this sum, add digits from previous sum to answer of this sum, and then add this answer line to sum
                     let answerLine = null;
                     for (let i = 0; i < s.textlines.length; i++) {
@@ -402,47 +540,86 @@ class Sub extends Component {
                         if (l.hasOwnProperty('answerLine')) {
                             answerLine = s.textlines.splice(i, 1)
                         }
-                    }
-                    this.addDummyDigits(s.textlines, sums.length)
+                    } */
+                    this.addDummyDigits(s.textlines, sums.length, newS)
                     newS.textlines = s.textlines.concat(newS.textlines)
-                    newS.textlines = newS.textlines.concat(answerLine);
                 } else {
                     newS = cloneDeep(s);
                 }
                 previousSum = newS;
+                newS.answer = s.answer
                 newSums.push(newS)
             }
         }
         return newSums;
     }
 
+    printColumn(lines, column) {
+        for (let i = 0; i < 3; i++) {
+            console.log(JSON.stringify(lines[i].texts[column]))
+        }
+    }
+
     shiftDigitsToLowerEmptySpace(sums) {
-        // for (let s of sums) {
-        let s = sums[0]
-        for (let i = 0; i < sums.length; i++) {
-            let largetHiddenIndex = this.getLargestHiddenIndex(s.textlines, i)
-            let lowestVisibleIndex = this.getLowestVisibleIndex(s.textlines, i)
-            console.log('largetHiddenIndex : ' + largetHiddenIndex + ' lowestVisibleIndex: ' + lowestVisibleIndex + ' i:' + i)
-            if (largetHiddenIndex !== -1 && lowestVisibleIndex !== -1 && largetHiddenIndex > lowestVisibleIndex) {
-                let temp1 = s.textlines[largetHiddenIndex].texts[i]
-                let temp2 = s.textlines[lowestVisibleIndex].texts[i]
-                s.textlines[largetHiddenIndex].texts[i] = temp2;
-                s.textlines[lowestVisibleIndex].texts[i] = temp1;
+        for (let s of sums) {
+            //let s = sums[0]
+            // let i = 3
+            for (let i = 0; i < sums.length; i++) {
+                let largetHiddenIndex = this.getLargestHiddenIndex(s.textlines, i)
+                let largetVisibleButSmallerThanHiddenIndex =
+                    this.getLargetVisibleButSmallerThanHiddenIndex(s.textlines, i, largetHiddenIndex)
+                if (largetHiddenIndex !== -1 && largetVisibleButSmallerThanHiddenIndex !== -1) {
+                    const columnsToShift = largetHiddenIndex - largetVisibleButSmallerThanHiddenIndex;
+                    // console.log('rows to shift in column: ' + columnsToShift + ' ' + i)
+                    //this.printColumn(s.textlines, 3);
+                    for (let j = 0; j < columnsToShift; j++) {
+                        for (let k = largetHiddenIndex; k > 0; k--) {
+                            s.textlines[k].texts[i] = { ...s.textlines[k - 1].texts[i] }
+                            //console.log('s.textlines[k - 1].texts[i]: ' + JSON.stringify(s.textlines[k - 1].texts[i]))
+                            // console.log('shifted')
+                            //s.textlines[k].texts[i].hidden = 'n'
+                        }
+
+                    }
+                    // this.printColumn(s.textlines, 3);
+                    for (let m = 0; m < columnsToShift; m++) {
+                        //   console.log('columnsToShift, line: ' + ' m ' + m + ' i : ' + i)
+                        //s.textlines[0].texts[2].hidden = 'y'
+                        //s.textlines[0].texts[3].hidden = 'y'
+                        //s.textlines[1].texts[3].hidden = 'y'
+                        s.textlines[m].texts[i].hidden = 'y'
+                    }
+                }
             }
         }
+        /* s.textlines[0].texts[3].hidden = 'y'
+        s.textlines[1].texts[3].hidden = 'y'
+        s.textlines[2].texts[3].hidden = 'n'
+        s.textlines[2].texts[3].text = '10'
+ */
+        // s.textlines[0].texts[3].hidden = 'y'
+        /*   console.log('s.textlines[0].texts[3].hidden ' + JSON.stringify(s.textlines[0].texts[3]))
+          console.log('s.textlines[1].texts[3].hidden ' + JSON.stringify(s.textlines[1].texts[3]))  
+          //s.textlines[1].texts[3].hidden = 'y'
+          //s.textlines[1].texts[3].text = '34'
+          console.log('s.textlines[0].texts[3].hidden ' + JSON.stringify(s.textlines[0].texts[3]))
+          console.log('s.textlines[1].texts[3].hidden ' + JSON.stringify(s.textlines[1].texts[3]))
+          console.log('equal: ' + (s.textlines[0].texts[3] === s.textlines[1].texts[3]))
+          console.log('eq ' + s.textlines[0].texts[3].text + ' ' + ' s.textlines[1].texts[3].text: ' + s.textlines[1].texts[3].text)
+         */  //s.textlines[1].texts[3].hidden = 'y'
         //}
     }
 
     decorateAnswerColumn(sums) {
         for (let i = 0; i < sums.length; i++) {
             const answerColor = 'blue';
-            let lowestVisibleIndex = this.getLowestVisibleIndex(sums[i].textlines, i);
-            let largestVisibleIndex = this.getLargestVisibleIndex(sums[i].textlines, i)
+            let lowestVisibleIndex = this.getLowestVisibleIndex(sums[i].textlines, sums.length - 1 - i);
+            let largestVisibleIndex = this.getLargestVisibleIndex(sums[i].textlines, sums.length - 1 - i);
 
             sums[i].textlines[lowestVisibleIndex].texts[sums.length - 1 - i].fill = answerColor;
             sums[i].textlines[largestVisibleIndex].texts[sums.length - 1 - i].fill = answerColor;
             let answerLine = this.getAnswerLine(sums[i].textlines);
-            answerLine.texts[sums.length - 1 - i].fill = answerColor;
+            answerLine.texts[sums.length - 1 - i].fill = 'red';
 
             sums[i].textlines[lowestVisibleIndex].texts[sums.length - 1 - i].weight = 'bold';
             sums[i].textlines[largestVisibleIndex].texts[sums.length - 1 - i].weight = 'bold';
@@ -467,13 +644,26 @@ class Sub extends Component {
                     break;
                 }
                 let t = textlines[i].texts[column]
-                if (!t.hasOwnProperty('hidden') || t.hidden === 'n') {
+                if (t.hidden === 'n') {
                     lowestVisibleIndex = i;
                     break;
                 }
             }
         }
         return lowestVisibleIndex;
+    }
+
+    getLargetVisibleButSmallerThanHiddenIndex(textlines, column, hiddenIndex) {
+        let largestVisibleIndex = -1;
+        for (let i = 0; i < textlines.length; i++) {
+            if (textlines[i].texts && textlines[i].texts[column]) {
+                let t = textlines[i].texts[column]
+                if (t.hidden === 'n' && i < hiddenIndex) {
+                    largestVisibleIndex = i;
+                }
+            }
+        }
+        return largestVisibleIndex;
     }
 
     getLargestHiddenIndex(textlines, column) {
@@ -484,7 +674,7 @@ class Sub extends Component {
                     break;
                 }
                 let t = textlines[i].texts[column]
-                if (t.hasOwnProperty('hidden') && t.hidden === 'y') {
+                if (t.hidden === 'y') {
                     largetHiddenIndex = i;
                 }
             }
@@ -508,14 +698,19 @@ class Sub extends Component {
         return largetVisibleIndex;
     }
 
-    addDummyDigits(textlines, length) {
-        for (let l of textlines) {
-            let blankSpaces = length - l.texts.length;
-            for (let i = 0; i < blankSpaces; i++) {
-                l.texts.push({
-                    text: '0',
-                    hidden: 'y'
-                })
+    addDummyDigits(textlines, length, previousSum) {
+        let previousSumLastLine = previousSum.textlines[0]
+        if (textlines.length > 0) {
+            let thisSumTextLength = textlines[0].texts.length;
+            let blankSpaces = length - thisSumTextLength;
+            for (let l of textlines) {
+                for (let i = 0; i < blankSpaces; i++) {
+                    /*  l.texts.push({
+                         text: '0',
+                         hidden: 'y'
+                     }) */
+                    l.texts.push({ ...previousSumLastLine.texts[thisSumTextLength + i] })
+                }
             }
         }
     }
@@ -547,7 +742,7 @@ class Sub extends Component {
         for (let i = 1; i <= this.svgs; i++) {
             let el = findDOMNode(this.refs['sum' + i]);
             let bbox = el.getBBox();
-            console.log('width and height set....')
+            // console.log('width and height set....')
             el.setAttributeNS(null, 'width', bbox.width + 100)
             el.setAttributeNS(null, 'height', bbox.height + 100)
         }
@@ -559,7 +754,7 @@ class Sub extends Component {
         for (let i = 1; i <= this.svgs; i++) {
             let el = findDOMNode(this.refs['sum' + i]);
             let bbox = el.getBBox();
-            console.log('width and height set....')
+            // console.log('width and height set....')
             el.setAttributeNS(null, 'width', bbox.width + 100)
             el.setAttributeNS(null, 'height', bbox.height + 100)
         }
