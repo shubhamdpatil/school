@@ -7,6 +7,23 @@
    flex-wrap: wrap;   
 }
 
+.example-enter {
+  opacity: 0.01;
+}
+
+.example-enter.example-enter-active {
+  opacity: 1;
+  transition: opacity 500000ms ease-in;
+}
+
+.example-leave {
+  opacity: 1;
+}
+
+.example-leave.example-leave-active {
+  opacity: 0.01;
+  transition: opacity 300ms ease-in;
+}
 
 .container1 {
     display: flex;
@@ -24,6 +41,21 @@
     margin: 20px;
     padding: 20px;
     position: relative;
+}
+
+#sum1 {
+  animation-duration: 5s;
+/*   animation-name: show;
+ */}
+
+@keyframes show {
+  from {
+    opacity: 0 
+  }
+
+  to {
+   opacity: 100
+  }
 }
 
 .row {

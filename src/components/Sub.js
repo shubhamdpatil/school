@@ -6,6 +6,8 @@ import wrongAnswer from './wrong-answer.png'
 import { findDOMNode } from 'react-dom';
 import classNames from 'classnames';
 import { cloneDeep } from 'lodash';
+import ReactCSSTransitionGroup from 'react-addons-css-transition-group'; // ES6
+
 const util = require('util')
 //const Snap = require(`imports-loader?this=>window,fix=>module.exports=0!snapsvg/dist/snap.svg.js`);
 
@@ -204,6 +206,7 @@ class Sub extends Component {
             }
         ]
         this.sums = this.getSum();
+        this.problem = this.problemSum('60100', '02136', '03964');
     }
 
     isArraySame(array1, array2) {
@@ -224,8 +227,40 @@ class Sub extends Component {
         return sums;
     }
 
+    numberToTextline(number) {
+        let textline = {}
+        textline.type = 'textline'
+        textline.size = this.BIG_FONT_HEIGHT
+        textline.texts = number.map((d, i) => {
+            return {
+                text: d.toString(),
+                hidden: 'n'
+            }
+        })
+        return textline;
+    }
+
+    problemSum(minuend, subtrahend, answer) {
+        const minuendArray = minuend.toString().split('').map((e) => (+e))
+        const subtrahendArray = subtrahend.toString().split('').map((e) => (+e))
+        const answerArray = answer.toString().split('').map((e) => (+e))
+
+
+        let problem = {}
+        problem.textlines = [];
+        problem.textlines.push(this.numberToTextline(minuendArray))
+        let subtrahendLine = this.numberToTextline(subtrahendArray);
+        subtrahendLine.operation = '-'
+        problem.textlines.push(subtrahendLine)
+        problem.textlines.push({ type: 'line' });
+        let answerLine = this.numberToTextline(answerArray)
+        answerLine.hidden = 'y'
+        problem.textlines.push(answerLine)
+        return problem;
+    }
+
     convertBorrowLinesToText(sums, minuend, subtrahend) {
-        let lasttextline = cloneDeep(minuend) 
+        let lasttextline = cloneDeep(minuend)
         let sumsWithTextlines = sums.map(s => {
             let sum = {}
             sum.type = 'answer'
@@ -236,16 +271,21 @@ class Sub extends Component {
                 sum.digitsLength = t.length;
                 textline.texts = t.map((d, i) => {
                     return {
-                        text: d.toString()
+                        text: d.toString(),
+                        hidden: 'n'
                     }
                 })
-                lasttextline = cloneDeep(t) 
+                lasttextline = cloneDeep(t)
                 return textline;
             })
             sum.answer = lasttextline[lasttextline.length - 1] - subtrahend[lasttextline.length - 1]
             return sum;
         })
         return sumsWithTextlines;
+    }
+
+    getSumDigits(minuendLength, subtrahendLength) {
+
     }
 
     getSum(minuend = '60100', subtrahend = '02136') { //minuend = '6010', subtrahend = '2136'
@@ -273,6 +313,7 @@ class Sub extends Component {
     addMinuend(sums, minuend) {
         let textline = {};
         textline.type = 'textline'
+        textline.size = this.BIG_FONT_HEIGHT;
         textline.texts = minuend.map((d, i) => {
             return {
                 text: d.toString(),
@@ -351,10 +392,12 @@ class Sub extends Component {
         for (let s of sums) {
             let textline = {};
             textline.type = 'textline'
+            textline.size = this.BIG_FONT_HEIGHT;
             textline.operation = '-'
             textline.texts = subtrahend.map((d, i) => {
                 return {
-                    text: d.toString()
+                    text: d.toString(),
+                    hidden: 'n'
                 }
             })
             s.textlines.push(textline)
@@ -374,10 +417,12 @@ class Sub extends Component {
             textline.type = 'textline'
             textline.justified = 'right';
             textline.answerLine = 'y';
+            textline.size = this.BIG_FONT_HEIGHT;
             lastAnswer.unshift(s.answer);
             textline.texts = lastAnswer.map((d, i) => {
                 return {
-                    text: d.toString()
+                    text: d.toString(),
+                    hidden: 'n'
                 }
             })
             let blankSpaces = sums.length - textline.texts.length;
@@ -580,25 +625,13 @@ class Sub extends Component {
         return newD1;
     }
 
-    componentDidMount() {
-        let ns = 'http://www.w3.org/2000/svg'
-        for (let i = 1; i <= this.svgs; i++) {
-            let el = findDOMNode(this.refs['sum' + i]);
-            let bbox = el.getBBox();
-            // console.log('width and height set....')
-            el.setAttributeNS(null, 'width', bbox.width + 100)
-            el.setAttributeNS(null, 'height', bbox.height + 100)
-        }
-    }
-
-
     componentDidUpdate(prevProps, prevState) {
         let ns = 'http://www.w3.org/2000/svg'
         for (let i = 1; i <= this.svgs; i++) {
             let el = findDOMNode(this.refs['sum' + i]);
             let bbox = el.getBBox();
-            el.setAttributeNS(null, 'width', bbox.width + 100)
-            el.setAttributeNS(null, 'height', bbox.height + 100)
+            el.setAttributeNS(null, 'width', bbox.width + 20)
+            el.setAttributeNS(null, 'height', bbox.height + 20)
         }
     }
 
@@ -614,13 +647,14 @@ class Sub extends Component {
 
     check() {
         this.showAnswer = true;
+        this.problem.textlines[3].hidden = 'n'
     }
 
     line(length) {
         let y = this.Y - this.TEXT_HEIGHT / 2;
         this.Y += this.LINE_HEIGHT + 10;
 
-        return (<line key={this.g++} x1={this.X} y1={y} x2={this.X + length * this.LETTER_WIDTH} y2={y} style={{ stroke: 'rgb(0,0,0)', strokeWidth: '2' }} />)
+        return (<line key={this.g++} x1={this.X} y1={y} x2={this.X + length * this.LETTER_WIDTH + this.LETTER_WIDTH / 2} y2={y} style={{ stroke: 'rgb(0,0,0)', strokeWidth: '2' }} />)
     }
 
     minus(x, y) {
@@ -628,21 +662,47 @@ class Sub extends Component {
             <line x1={x} y1={y - 10} x2={x + 20} y2={y - 10} style={{ stroke: 'rgb(0,0,0)', strokeWidth: '2' }} />
         </g>)
     }
-    
-    textline(text) {
+
+    textline(line) {
+
+        if (line.hasOwnProperty('hidden') && line.hidden === 'y')
+            return;
+
         let xStart = this.X_START;
         let y = this.Y;
-        let operation = text.operation ? this.minus(xStart, this.Y) : null;
-        this.Y += text.size ? 35 : this.TEXT_HEIGHT;
+        let operation = line.operation ? this.minus(xStart, this.Y) : null;
+        this.Y += line.size ? 35 : this.TEXT_HEIGHT;
 
         xStart += this.LETTER_WIDTH;
+        console.log('size: ' + line.size)
 
-        let texts = text.texts.map((e, i) => {
-            // let hidden = this.showAnswer && text.answer === 'y' ? false : e.hidden;
+        let texts = line.texts.map((e, i) => {
             let hidden = e.hidden === 'y' ? true : false
-            return <text key={i} x={xStart + i * this.LETTER_WIDTH} y={y} style={{ fill: 'black', fontSize: text.size ? this.SMALL_FONT_HEIGHT : this.BIG_FONT_HEIGHT, visibility: hidden ? 'hidden' : 'visible', textDecoration: e.crossed === 'y' ? 'line-through' : 'none', textDecorationColor: e.crossed ? 'red' : 'black', textAnchor: 'middle', fill: e.fill ? e.fill : 'black', fontWeight: e.weight ? e.weight : 'normal' }}>{e.text} </text>
+            return <text key={i} x={xStart + i * this.LETTER_WIDTH} y={y} style={{ fill: 'black', fontSize: line.size, visibility: e.hidden === 'y' ? 'hidden' : 'visible', textDecoration: e.crossed === 'y' ? 'line-through' : 'none', textDecorationColor: e.crossed ? 'red' : 'black', textAnchor: 'middle', fill: e.fill ? e.fill : 'black', fontWeight: e.weight ? e.weight : 'normal' }}>{e.text} </text>
         });
         return <g key={this.g++}> {operation} {texts} </g>
+    }
+
+
+    renderSum(s, i, border, anchor) {
+        return <div key={i} className={classNames('sum1', border)} id={'sum' + ++this.svgs} >
+            <Index index={anchor} />
+            <svg ref={'sum' + this.svgs} style={{ paddingLeft: '20px' }}>
+                {this.Y = this.Y_START} {this.X = this.X_START} {this.inputs = []}
+                {
+                    s.textlines.map((l) => {
+                        switch (l.type) {
+                            case 'textline':
+                                return this.textline(l);
+                            case 'line':
+                                return this.line(this.sums.length);
+                            default:
+                                break;
+                        }
+                    })
+                }
+            </svg>
+        </div>
     }
 
     render() {
@@ -651,13 +711,14 @@ class Sub extends Component {
             answerCircleColor = this.answerCorrect ? 'green' : 'red';
         }
         this.svgs = 0;
-
         return (
-            <div className="sumContainer" style={{ display: 'flex', margin: '20px' }}>
-                {this.sums.map((s, i) => {
-                    return <div key={i} className={classNames('sum1', 'greenBorder')}>
+            <div className="sumContainer" style={{ display: 'flex', margin: '20px', flexWrap: 'wrap' }}>
+                {this.renderSum(this.problem, 0, 'blueBorder', 'Q')}
+                {this.showAnswer && this.sums.map((s, i) => {
+                    return this.renderSum(s, i, 'greenBorder', i + 1)
+                    {/*   return <div key={i} className={classNames('sum1', 'greenBorder')} id={'sum' + ++this.svgs} >
                         <Index index='A' />
-                        <svg ref={'sum' + ++this.svgs} style={{ paddingLeft: '20px' }}>
+                        <svg ref={'sum' + this.svgs} style={{ paddingLeft: '20px' }}>
                             {this.Y = this.Y_START} {this.X = this.X_START} {this.inputs = []}
                             {
                                 s.textlines.map((l) => {
@@ -665,14 +726,14 @@ class Sub extends Component {
                                         case 'textline':
                                             return this.textline(l);
                                         case 'line':
-                                            return this.line(3);
+                                            return this.line(this.sums.length);
                                         default:
                                             break;
                                     }
                                 })
                             }
                         </svg>
-                    </div>
+                    </div> */}
                 })}
             </div>)
 
