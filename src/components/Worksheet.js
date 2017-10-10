@@ -3,7 +3,7 @@ import styles from './../styles/Globals.css';
 import Add from './Add'
 import Sub from './Sub'
 import Addition from './../store/Addition';
-import MultiplicationC from './Multiplication';
+import Mult from './Mult';
 import DivisionC from './Division';
 import getAdditionSum from './../sums/addition'
 const util = require('util')
@@ -148,7 +148,7 @@ class Worksheet extends Component {
         this.keys = [];
         this.check = this.check.bind(this);
         this.newSum = this.newSum.bind(this);
-        this.selectedOperation = "subtraction";
+        this.selectedOperation = "multiplication";
         this.sums = [];
     }
 
@@ -174,7 +174,7 @@ class Worksheet extends Component {
 
     componentDidMount() {
         // let mul = new Multiplication(2, 2);
-        this.setState({ new: true, check: false })
+        this.setState({ new: false, check: false })
     }
 
     getSums() {
@@ -198,9 +198,12 @@ class Worksheet extends Component {
         let count = this.refs.count ? parseInt(this.refs.count.value) : 10;
         if (operation === 'multiplication') {
             this.selectedOperation = "multiplication"
-            for (let i = 0; i < count; i++) {
-                result.push(<MultiplicationC key={this.keys[i]} digits={2} size={2} check={this.state.check} index={i + 1} />)
+            for (let i = 0; i < 10; i++) {
+                result.push(<div key={i} style={{ borderStyle: 'solid', borderColor: 'gray', margin: '10px 40px 10px 10px', position: 'relative' }} >
+                    {<Index index={i+1} />}
+                    <Mult key={i} check={this.state.check} new={this.state.new} /> </div>);
             }
+            
         } else if (operation === 'division') {
             this.selectedOperation = "division"
             for (let i = 0; i < 1; i++) {
@@ -224,9 +227,11 @@ class Worksheet extends Component {
             // }
         } else if (operation === 'subtraction') {
             this.selectedOperation = "subtraction"
-            result.push(<div key={0} style={{ borderStyle: 'solid', borderColor: 'gray', margin: '10px 40px 10px 10px', position: 'relative' }} >
-                {<Index index={0} />}
-                <Sub key={0} check={this.state.check} /> </div>);
+            for (let i = 0; i < 4; i++) {
+                result.push(<div key={i} style={{ borderStyle: 'solid', borderColor: 'gray', margin: '10px 40px 10px 10px', position: 'relative' }} >
+                    {<Index index={i} />}
+                    <Sub key={i} check={this.state.check} new={this.state.new} /> </div>);
+            }
         }
         return result;
     }

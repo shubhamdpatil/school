@@ -6,7 +6,8 @@ import wrongAnswer from './wrong-answer.png'
 import { findDOMNode } from 'react-dom';
 import classNames from 'classnames';
 import { cloneDeep } from 'lodash';
-import ReactCSSTransitionGroup from 'react-addons-css-transition-group'; // ES6
+import { getRandomIntInclusive, NUMBER_RANGE } from './../utils/Random'
+
 
 const util = require('util')
 //const Snap = require(`imports-loader?this=>window,fix=>module.exports=0!snapsvg/dist/snap.svg.js`);
@@ -37,176 +38,24 @@ class Sub extends Component {
         this.X = this.X_START;
         this.showAnswer = false;
         this.g = 0;
-        this.sum = [
-            {
-                type: 'problem',
-                steps: [
-                    {
-                        type: 'textline',
-                        texts: [
-                            {
-                                text: '5'
-                            },
-                            {
-                                text: '2',
-                                crossed: 'y'
-                            }
-                        ]
-                    },
-                    {
-                        type: 'textline',
-                        operation: '-',
-                        texts: [
-                            {
-                                text: '4'
-                            },
-                            {
-                                text: '6'
-                            }
-                        ]
-                    },
-                    {
-                        type: 'line'
-                    },
-                    {
-                        type: 'textline',
-                        answer: 'y',
-                        texts: [
-                            {
-                                text: '0',
-                                hidden: 'y'
-                            },
-                            {
-                                text: '6',
-                                hidden: 'y'
-                            }
-                        ]
-                    },
-                ]
-            },
-            {
-                type: 'answer',
-                answers: [
-                    [
-                        {
-                            type: 'textline',
-                            size: 'small',
-                            texts: [
-                                {
-                                    text: '4',
-                                },
-                                {
-                                    text: '12'
-                                }
-                            ]
-                        },
-                        {
-                            type: 'textline',
-                            texts: [
-                                {
-                                    text: '5',
-                                    crossed: 'y'
-                                },
-                                {
-                                    text: '2',
-                                    visible: 'n',
-                                    crossed: 'y'
-                                }
-                            ]
-                        },
-                        {
-                            type: 'textline',
-                            operation: '-',
-                            texts: [
-                                {
-                                    text: '4',
-                                    visible: 'y'
-                                },
-                                {
-                                    text: '6',
-                                    visible: 'n'
-                                }
-                            ]
-                        },
-                        {
-                            type: 'line'
-                        },
-                        {
-                            type: 'textline',
-                            texts: [
-                                {
-                                    text: '0'
-                                },
-                                {
-                                    text: '6'
-                                }
-                            ]
-                        },
-                    ], [
-                        {
-                            type: 'textline',
-                            size: 'small',
-                            texts: [
-                                {
-                                    text: '5',
-                                    visible: 'y'
-                                },
-                                {
-                                    text: '12',
-                                    visible: 'n'
-                                }
-                            ]
-                        },
-                        {
-                            type: 'textline',
-                            texts: [
-                                {
-                                    text: '5',
-                                    visible: 'y'
-                                },
-                                {
-                                    text: '2',
-                                    visible: 'n',
-                                    crossed: 'y'
-                                }
-                            ]
-                        },
-                        {
-                            type: 'textline',
-                            operation: '-',
-                            texts: [
-                                {
-                                    text: '4',
-                                    visible: 'y'
-                                },
-                                {
-                                    text: '6',
-                                    visible: 'n'
-                                }
-                            ]
-                        },
-                        {
-                            type: 'line'
-                        },
-                        {
-                            type: 'textline',
-                            texts: [
-                                {
-                                    text: '5',
-                                    visible: 'y'
-                                },
-                                {
-                                    text: '2',
-                                    visible: 'n',
-                                    strikeThrough: 'y'
-                                }
-                            ]
-                        },
-                    ]]
-            }
-        ]
-        this.sums = this.getSum();
-        this.problem = this.problemSum('60100', '02136', '03964');
+        this.constructProblem();
+        this.problem = this.problemSum(this.minuend, this.subtrahend, this.answer);
+        //this.getSum(minuend = '60100', subtrahend = '02136')  //minuend = '6010', subtrahend = '2136'
+    }
+
+    numberToStringWithZeroPadded(number, length) {
+        let str = number.toString();
+        str = '0'.repeat(length - str.length) + str;
+        return str;
+    }
+
+    constructProblem() {
+        this.minuend = getRandomIntInclusive(NUMBER_RANGE[5].min, NUMBER_RANGE[5].max)
+        this.subtrahend = getRandomIntInclusive(NUMBER_RANGE[5].min, this.minuend)
+        this.answer = this.minuend - this.subtrahend;
+        this.minuend = this.numberToStringWithZeroPadded(this.minuend, 5)
+        this.subtrahend = this.numberToStringWithZeroPadded(this.subtrahend, 5)
+        this.answer = this.numberToStringWithZeroPadded(this.answer, 5)
     }
 
     isArraySame(array1, array2) {
@@ -288,7 +137,7 @@ class Sub extends Component {
 
     }
 
-    getSum(minuend = '60100', subtrahend = '02136') { //minuend = '6010', subtrahend = '2136'
+    getSum(minuend, subtrahend) { //minuend = '6010', subtrahend = '2136'
 
         const minuendArray = minuend.toString().split('').map((e) => (+e))
         const subtrahendArrayReversed = subtrahend.toString().split('').map((e) => (+e)).reverse()
@@ -639,15 +488,17 @@ class Sub extends Component {
         if (nextProps.check) {
             this.check();
         }
-        if (nextProps.sum !== this.props.sum) {
+        if (nextProps.new) {
+            this.constructProblem();
+            this.problem = this.problemSum(this.minuend, this.subtrahend, this.answer);
             this.showAnswer = false;
-            this.answerCorrect = false;
         }
     }
 
     check() {
         this.showAnswer = true;
         this.problem.textlines[3].hidden = 'n'
+        console.log('check')
     }
 
     line(length) {
@@ -672,9 +523,7 @@ class Sub extends Component {
         let y = this.Y;
         let operation = line.operation ? this.minus(xStart, this.Y) : null;
         this.Y += line.size ? 35 : this.TEXT_HEIGHT;
-
         xStart += this.LETTER_WIDTH;
-        console.log('size: ' + line.size)
 
         let texts = line.texts.map((e, i) => {
             let hidden = e.hidden === 'y' ? true : false
@@ -706,88 +555,15 @@ class Sub extends Component {
     }
 
     render() {
-        let answerCircleColor = null;
-        if (this.showAnswer) {
-            answerCircleColor = this.answerCorrect ? 'green' : 'red';
-        }
+        this.sums = this.getSum(this.minuend, this.subtrahend);
         this.svgs = 0;
         return (
             <div className="sumContainer" style={{ display: 'flex', margin: '20px', flexWrap: 'wrap' }}>
                 {this.renderSum(this.problem, 0, 'blueBorder', 'Q')}
                 {this.showAnswer && this.sums.map((s, i) => {
                     return this.renderSum(s, i, 'greenBorder', i + 1)
-                    {/*   return <div key={i} className={classNames('sum1', 'greenBorder')} id={'sum' + ++this.svgs} >
-                        <Index index='A' />
-                        <svg ref={'sum' + this.svgs} style={{ paddingLeft: '20px' }}>
-                            {this.Y = this.Y_START} {this.X = this.X_START} {this.inputs = []}
-                            {
-                                s.textlines.map((l) => {
-                                    switch (l.type) {
-                                        case 'textline':
-                                            return this.textline(l);
-                                        case 'line':
-                                            return this.line(this.sums.length);
-                                        default:
-                                            break;
-                                    }
-                                })
-                            }
-                        </svg>
-                    </div> */}
                 })}
             </div>)
-
-        /*  return (
-             <div className="sumContainer" style={{ display: 'flex', margin: '20px' }}>
-                 {this.sum.map((e, i) => {
-                     return e.type === 'problem' ?
-                         <div key={i} >
-                             <div className={classNames(
-                                 'sum1', 'blueBorder')}>
-                                 <Index index='Q' />
-                                 <svg ref={'sum' + ++this.svgs} style={{ paddingLeft: '20px' }}>
-                                     {this.Y = this.Y_START} {this.X = this.X_START} }
-                             {
-                                         e.steps.map((l, i) => {
-                                             switch (l.type) {
-                                                 case 'textline':
-                                                     return this.textline(l);
-                                                 case 'line':
-                                                     return this.line(3);
-                                                 default:
-                                                     break;
-                                             }
-                                         })
-                                     }
-                                 </svg>
-                             </div>
-                         </div>
-                         :
-                         <div key={i} style={{ display: 'flex', flexDirection: 'column' }}>
-                             {e.answers.map((a, j) => {
-                                 return <div key={j} className={classNames('sum1', 'greenBorder')}>
-                                     <Index index='A' />
-                                     <svg ref={'sum' + ++this.svgs} style={{ paddingLeft: '20px' }}>
-                                         {this.Y = this.Y_START} {this.X = this.X_START} {this.inputs = []}
-                                         {
-                                             a.map((l) => {
-                                                 switch (l.type) {
-                                                     case 'textline':
-                                                         return this.textline(l);
-                                                     case 'line':
-                                                         return this.line(3);
-                                                     default:
-                                                         break;
-                                                 }
-                                             })
-                                         }
-                                     </svg>
-                                 </div>
-                             })}
-                         </div>
-                 })}
-             </div>
-         ) */
     }
 }
 
