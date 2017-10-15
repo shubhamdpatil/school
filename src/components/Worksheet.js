@@ -20,7 +20,7 @@ class Worksheet extends Component {
         this.keys = [];
         this.check = this.check.bind(this);
         this.newSum = this.newSum.bind(this);
-        this.selectedOperation = "division";
+        this.selectedOperation = "multiplication";
         this.sums = [];
     }
 

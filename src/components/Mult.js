@@ -18,7 +18,7 @@ class Mult extends Component {
         this.CARRYOVER_HEIGHT = 30;
         this.LINE_HEIGHT = 0;
         this.INPUT_HEIGHT = 80;
-        this.LETTER_WIDTH = 40;
+        this.LETTER_WIDTH = 25;
         this.Y_START = 40;
         this.X_START = 0;
         this.Y = this.Y_START;
@@ -71,13 +71,13 @@ class Mult extends Component {
 
     plus(x, y) {
         return (<g>
-            <line x1={x} y1={y - 10} x2={x + 20} y2={y - 10} style={{ stroke: 'rgb(0,0,0)', strokeWidth: '2' }} />
-            <line x1={x + 10} y1={y - 20} x2={x + 10} y2={y} style={{ stroke: 'rgb(0,0,0)', strokeWidth: '2' }} />
+            <line x1={x} y1={y - 8} x2={x + 16} y2={y - 8} style={{ stroke: 'rgb(0,0,0)', strokeWidth: '2' }} />
+            <line x1={x + 8} y1={y - 16} x2={x + 8} y2={y} style={{ stroke: 'rgb(0,0,0)', strokeWidth: '2' }} />
         </g>)
     }
 
     multiply(x, y) {
-        const length = 18;
+        const length = 13;
         return (<g>
             <line x1={x} y1={y - length} x2={x + length} y2={y} style={{ stroke: 'rgb(0,0,0)', strokeWidth: '2' }} />
             <line x1={x} y1={y} x2={x + length} y2={y - length} style={{ stroke: 'rgb(0,0,0)', strokeWidth: '2' }} />
@@ -87,11 +87,20 @@ class Mult extends Component {
     textline(line) {
         const y = this.Y;
         this.Y += line.size ? 35 : this.TEXT_HEIGHT;
-        const xStart = this.LETTER_WIDTH + (this.length - line.texts.length) * this.LETTER_WIDTH;
-        let operation = line.operation ? line.operation === '+' ? this.plus(xStart - this.LETTER_WIDTH, y) :
-            this.multiply(xStart - this.LETTER_WIDTH, y) : null;
+        const xStart = 1.5 * this.LETTER_WIDTH + (this.length - line.texts.length) * this.LETTER_WIDTH;
+        let operation = line.operation ? line.operation === '+' ? this.plus(0, y) :
+            this.multiply(xStart - 1.5 * this.LETTER_WIDTH, y) : null;
+        let nonZeroFound = false;
         let texts = line.texts.map((e, i) => {
-            return <text key={i} x={xStart + i * this.LETTER_WIDTH} y={y} style={{ fill: 'black', fontSize: line.size, textAnchor: 'middle', visibility: e.text === 'x' ? 'hidden' : 'visible', fontWeight: e.weight ? e.weight : 'normal' }}>{e.text} </text>
+            if (e.text !== '0' && !nonZeroFound) {
+                nonZeroFound = true;
+            }
+            let visibility = nonZeroFound && e.text !== 'x' ? 'visible' : 'hidden';
+            if (i === line.texts.length - 1 && !nonZeroFound && !line.hasOwnProperty('isCarryOver')) {
+                visibility = 'visible';
+            }
+            const fill = line.hasOwnProperty('isCarryOver') ? 'orange' : 'black';
+            return <text key={i} x={xStart + i * this.LETTER_WIDTH} y={y} style={{ fill:`${fill}`, fontSize: line.size, textAnchor: 'middle', visibility: `${visibility}`, fontWeight: e.weight ? e.weight : 'normal' }}>{e.text} </text>
         });
         return <g key={this.lineKey++}> {operation} {texts} </g>
     }
@@ -124,6 +133,7 @@ class Mult extends Component {
         }
         const carryOverLine = this.numberToTextline(carryText);
         carryOverLine.size = this.SMALL_FONT_HEIGHT;
+        carryOverLine.isCarryOver = true;
         answer.textlines.push(carryOverLine);
     }
 
