@@ -18,7 +18,7 @@ class Mult extends Component {
         this.CARRYOVER_HEIGHT = 30;
         this.LINE_HEIGHT = 0;
         this.INPUT_HEIGHT = 80;
-        this.LETTER_WIDTH = 50;
+        this.LETTER_WIDTH = 40;
         this.Y_START = 40;
         this.X_START = 0;
         this.Y = this.Y_START;
@@ -28,7 +28,7 @@ class Mult extends Component {
         this.sums = this.constructProblem();
     }
 
-    componentDidUpdate(prevProps, prevState) {
+    setDimension() {
         let ns = 'http://www.w3.org/2000/svg'
         for (let i = 0; i <= 1; i++) {
             const el = findDOMNode(this.refs['sum' + i]);
@@ -36,8 +36,17 @@ class Mult extends Component {
                 const bbox = el.getBBox();
                 el.setAttributeNS(null, 'width', bbox.width + 20)
                 el.setAttributeNS(null, 'height', bbox.height + 20)
-            }    
+            }
         }
+    }
+
+    componentDidUpdate(prevProps, prevState) {
+        console.log('componentDidUpdate')
+        this.setDimension();
+    }
+
+    componentDidMount() {
+        this.setDimension();
     }
 
     constructProblem() {

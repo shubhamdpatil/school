@@ -4,137 +4,9 @@ import Add from './Add'
 import Sub from './Sub'
 import Addition from './../store/Addition';
 import Mult from './Mult';
-import DivisionC from './Division';
+import Div from './Div';
 import getAdditionSum from './../sums/addition'
 const util = require('util')
-
-let sums = [{
-    index: 1,
-    inputs: 4,
-    problem: {
-        steps: [
-            {
-                type: 'carryover',
-                value: 'xxx'
-            },
-            {
-                type: 'number',
-                value: '123'
-            },
-            {
-                type: 'number',
-                operation: '+',
-                value: '498'
-            },
-            {
-                type: 'number',
-                operation: '+',
-                value: '888'
-            },
-            {
-                type: 'line'
-            },
-            {
-
-                type: 'inputs',
-                length: 5
-            }
-        ]
-    },
-    answer: {
-        answer: 'x458',
-        steps: [
-            {
-                type: 'carryover',
-                value: '1x3'
-            },
-            {
-                type: 'number',
-                value: '123'
-            },
-            {
-                type: 'number',
-                operation: '+',
-                value: '498'
-            },
-            {
-                type: 'number',
-                operation: '+',
-                value: '888'
-            },
-            {
-                type: 'line'
-            },
-            {
-                type: 'answer',
-                value: 'x458'
-            }
-        ]
-    }
-}, {
-    index: 2,
-    inputs: 4,
-    problem: {
-        steps: [
-            {
-                type: 'carryover',
-                value: 'xxx'
-            },
-            {
-                type: 'number',
-                value: '123'
-            },
-            {
-                type: 'number',
-                operation: '+',
-                value: '498'
-            },
-            {
-                type: 'number',
-                operation: '+',
-                value: '888'
-            },
-            {
-                type: 'line'
-            },
-            {
-
-                type: 'inputs',
-                length: 5
-            }
-        ]
-    },
-    answer: {
-        answer: 'x458',
-        steps: [
-            {
-                type: 'carryover',
-                value: '1x3'
-            },
-            {
-                type: 'number',
-                value: '123'
-            },
-            {
-                type: 'number',
-                operation: '+',
-                value: '498'
-            },
-            {
-                type: 'number',
-                operation: '+',
-                value: '888'
-            },
-            {
-                type: 'line'
-            },
-            {
-                type: 'answer',
-                value: 'x458'
-            }
-        ]
-    }
-}]
 
 function Index(props) {
     return <div className="circle"> {props.index} </div>
@@ -148,7 +20,7 @@ class Worksheet extends Component {
         this.keys = [];
         this.check = this.check.bind(this);
         this.newSum = this.newSum.bind(this);
-        this.selectedOperation = "multiplication";
+        this.selectedOperation = "division";
         this.sums = [];
     }
 
@@ -200,14 +72,16 @@ class Worksheet extends Component {
             this.selectedOperation = "multiplication"
             for (let i = 0; i < 10; i++) {
                 result.push(<div key={i} style={{ borderStyle: 'solid', borderColor: 'gray', margin: '10px 40px 10px 10px', position: 'relative' }} >
-                    {<Index index={i+1} />}
+                    {<Index index={i + 1} />}
                     <Mult key={i} check={this.state.check} new={this.state.new} /> </div>);
             }
-            
+
         } else if (operation === 'division') {
             this.selectedOperation = "division"
             for (let i = 0; i < 1; i++) {
-                result.push(<DivisionC key={this.keys[i]} dividend={rows} divisor={columns} check={this.state.check} index={i + 1} />)
+                result.push(<div key={i} style={{ borderStyle: 'solid', borderColor: 'gray', margin: '10px 40px 10px 10px', position: 'relative' }} >
+                    {<Index index={i + 1} />}
+                    <Div key={i} check={this.state.check} new={this.state.new} /> </div>);
             }
         } else if (operation === 'addition') {
             this.selectedOperation = "addition"
@@ -244,7 +118,7 @@ class Worksheet extends Component {
                         <option value="addition" >Addition</option>
                         <option value="subtraction">Subtraction</option>
                         <option value="multiplication">Multiplication</option>
-                        <option value="division">5Division</option>
+                        <option value="division">Division</option>
                     </select>
                     <label> Columns </label>
                     <input type="text" ref="columns" defaultValue={3} placeholder="3" />
