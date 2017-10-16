@@ -474,7 +474,16 @@ class Sub extends Component {
         return newD1;
     }
 
+
     componentDidUpdate(prevProps, prevState) {
+        this.setDimension();
+    }
+
+    componentDidMount() {
+        this.setDimension();
+    }
+
+    setDimension() {
         let ns = 'http://www.w3.org/2000/svg'
         for (let i = 1; i <= this.svgs; i++) {
             let el = findDOMNode(this.refs['sum' + i]);

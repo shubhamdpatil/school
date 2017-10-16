@@ -1,241 +1,227 @@
+
 import React, { Component } from 'react';
-import styles from './../styles/Globals.css'
-import Addition from './../store/Addition'
-import correctAnswer from './check3.png'
-import wrongAnswer from './wrong-answer.png'
-import { findDOMNode } from 'react-dom';
 import classNames from 'classnames';
-const util = require('util')
-//const Snap = require(`imports-loader?this=>window,fix=>module.exports=0!snapsvg/dist/snap.svg.js`);
-
-
+import { findDOMNode } from 'react-dom';
+import { getRandomIntInclusive, NUMBER_RANGE } from './../utils/Random'
 
 function Index(props) {
     return <div className="circle"> {props.index} </div>
 }
 
 class Add extends Component {
-
     constructor(props) {
         super(props);
-        this.TEXT_HEIGHT = 50
+        this.numbers = 3;
+        this.size = 4;
+        this.TEXT_HEIGHT = 40
         this.HALF_BIG_FONT_HEIGHT = 15;
         this.BIG_FONT_HEIGHT = '30px'
         this.SMALL_FONT_HEIGHT = '20px'
         this.CARRYOVER_HEIGHT = 30;
         this.LINE_HEIGHT = 0;
         this.INPUT_HEIGHT = 80;
-        // this.RIGHT_X = 250;
-        this.LETTER_WIDTH = 50;
-        this.inputs = [];
-        this.Y_START = 40;
+        this.LETTER_WIDTH = 25;
+        this.Y_START = 25;
         this.X_START = 0;
         this.Y = this.Y_START;
         this.X = this.X_START;
-        this.showAnswer = false;
-        this.userAnswer = null;
-        this.g = 0;
+        this.showAnswer = true;
+        this.lineKey = 0;
+        this.sums = this.constructProblem();
     }
 
-
-    componentDidMount() {
-
+    setDimension() {
         let ns = 'http://www.w3.org/2000/svg'
-        let el = findDOMNode(this.refs.problem);
-        let bbox = el.getBBox();
-        el.setAttributeNS(null, 'width', bbox.width)
-        el.setAttributeNS(null, 'height', bbox.height)
+        for (let i = 0; i <= 1; i++) {
+            const el = findDOMNode(this.refs['sum' + i]);
+            if (el) {
+                const bbox = el.getBBox();
+                el.setAttributeNS(null, 'width', bbox.width + 20)
+                el.setAttributeNS(null, 'height', bbox.height + 20)
+            }
+        }
     }
 
     componentDidUpdate(prevProps, prevState) {
+        this.setDimension();
+    }
 
-        let ns = 'http://www.w3.org/2000/svg'
-        let el = findDOMNode(this.refs.problem);
-        let bbox = el.getBBox();
-        el.setAttributeNS(null, 'width', bbox.width + 5)
-        el.setAttributeNS(null, 'height', bbox.height)
+    componentDidMount() {
+        this.setDimension();
+    }
 
-        if (this.showAnswer) {
-            let el = findDOMNode(this.refs.answer);
-            let bbox = el.getBBox();
-            el.setAttributeNS(null, 'width', bbox.width)
-            el.setAttributeNS(null, 'height', bbox.height)
+    constructProblem() {
+        this.addends = [];
+        let answer = 0;
+        let numbers = [8772, 7969, 6496]
+        for (let i = 0; i < this.numbers; i++) {
+            const number = getRandomIntInclusive(NUMBER_RANGE[this.size].min, NUMBER_RANGE[this.size].max)
+            //   const number = numbers[i]
+            answer += number;
+            this.addends.push(number.toString().split('').map((e) => (+e)));
         }
-    }
-
-    componentWillReceiveProps(nextProps) {
-        if (nextProps.check) {
-            this.check();
-        }
-        if (nextProps.sum !== this.props.sum) {
-            this.showAnswer = false;
-            this.answerCorrect = false;
-        }
-    }
-
-    check() {
-        this.userAnswer = ''
-        this.inputs.map(e => {
-            if (e) {
-                let c = e.value.toString();
-                return this.userAnswer += (c === '' ? 'x' : c);
-            }
-        })
-
-        console.log(' this.userAnswer  this.props.sum.answer.answer ' + this.userAnswer + '  ' + this.props.sum.answer.answer)
-        if (this.userAnswer === this.props.sum.answer.answer) {
-            this.answerCorrect = true;
-        } else {
-            this.answerCorrect = false;
-        }
-        this.showAnswer = true;
-    }
-
-    answerr(text) {
-        let value = text.value.toString();
-        return this.input(value.length, value.split(''), 'green', null, true)
-    }
-
-    textline(text) {
-
-        let value = text.value.toString();
-        let xStart = this.X_START; //this.RIGHT_X - (value.length + (text.operation ? 1 : 0)) * this.LETTER_WIDTH;
-        let operation = text.operation ? this.plus(xStart, this.Y) : null;
-
-        xStart += (text.operation ? 1 : 0) * this.LETTER_WIDTH;
-        let y = this.Y;
-        this.Y += this.TEXT_HEIGHT;
-
-        let texts = value.split('').map((e, i) => {
-            return <text key={i} x={xStart + i * this.LETTER_WIDTH} y={y} style={{ fill: 'black', fontSize: this.BIG_FONT_HEIGHT, visibility: e === 'x' ? 'hidden' : 'visible' }}>{e} </text>
-        });
-        return <g key={this.g++}> {operation} {texts} </g>
-    }
-
-    carryover(text) {
-        let value = text.value.toString();
-        let xStart = this.X_START;
-        let y = this.Y -this.CARRYOVER_HEIGHT+5;
-       // this.Y += this.CARRYOVER_HEIGHT;
-
-        let texts = value.split('').map((e, i) => {
-            return <text key={i + 1} x={xStart + i * this.LETTER_WIDTH} y={y} style={{ fill: 'orange', fontWeight: 'bold', fontSize: this.SMALL_FONT_HEIGHT, visibility: e === 'x' ? 'hidden' : 'visible' }}>{e} </text>
-        });
-        return <g key={this.g++}>  {texts} </g>
-    }
-
-    line(length) {
-        let y = this.Y - this.TEXT_HEIGHT / 2;
-        this.Y += this.LINE_HEIGHT + 10;
-
-        return (<line key={this.g++} x1={this.X} y1={y} x2={this.X + length * this.LETTER_WIDTH} y2={y} style={{ stroke: 'rgb(0,0,0)', strokeWidth: '2' }} />)
+        this.answerArray = answer.toString().split('').map((e) => (+e));
+        this.length = this.answerArray.length;
+        this.formatSum();
     }
 
     plus(x, y) {
         return (<g>
-            <line x1={x} y1={y - 10} x2={x + 20} y2={y - 10} style={{ stroke: 'rgb(0,0,0)', strokeWidth: '2' }} />
-            <line x1={x + 10} y1={y - 20} x2={x + 10} y2={y} style={{ stroke: 'rgb(0,0,0)', strokeWidth: '2' }} />
+            <line x1={x} y1={y - 8} x2={x + 16} y2={y - 8} style={{ stroke: 'rgb(0,0,0)', strokeWidth: '2' }} />
+            <line x1={x + 8} y1={y - 16} x2={x + 8} y2={y} style={{ stroke: 'rgb(0,0,0)', strokeWidth: '2' }} />
         </g>)
     }
 
-    input(length, values, color = 'blue', circleColor = null, readOnly = true) {
-        let inputs = [];
-
-        let y = this.Y - 10;
-        this.Y += this.INPUT_HEIGHT;
-        let xStart = this.X_START - this.HALF_BIG_FONT_HEIGHT//this.RIGHT_X - length * this.LETTER_WIDTH - 15;
-        if (!readOnly) {
-            this.inputs = [];
+    textline(line) {
+        const y = this.Y;
+        this.Y += line.size ? 35 : this.TEXT_HEIGHT;
+        const xStart = 1.25 * this.LETTER_WIDTH + (this.length - line.texts.length) * this.LETTER_WIDTH;
+        let operation = null;
+        if (line.hasOwnProperty('operation') && line.operation === '+') {
+            operation = this.plus(0, y)
         }
-
-        let border = '1px solid ' + color
-        let ref = input => {
-            this.inputs.push(input);
-        }
-
-        for (let i = 0; i < length; i++) {
-            let value = values ? values[i] : '';
-            value = value === 'x' ? '' : value;
-            inputs.push(
-                <foreignObject key={i} x={xStart + i * this.LETTER_WIDTH} y={y} width={this.LETTER_WIDTH} height={this.TEXT_HEIGHT}>
-                    <div xmlns="http://www.w3.org/1999/xhtml">
-                        <div style={{ display: 'flex', border: border }} >
-                            {!readOnly && <input defaultValue={value} type="text" size="1" maxLength="1" ref={ref} style={{ color: color, width: "100%", height: '100%', padding: '0', fontSize: this.BIG_FONT_HEIGHT, borderWidth: '0px', border: 'none' }} />}
-                            {readOnly && <input value={value} type="text" size="1" maxLength="1" readOnly style={{ color: color, width: "100%", height: '100%', padding: '0', fontSize: this.BIG_FONT_HEIGHT, borderWidth: '0px', border: 'none' }} />}
-                        </div>
-                    </div>
-                </foreignObject>)
-        }
-        let circle = circleColor ? <circle cx={xStart + length * this.LETTER_WIDTH + 20} cy={y + 15} r="18" stroke="gren" strokeWidth="3" fill={circleColor} /> : null;
-        return <g key={this.g++}> {inputs} {circle} </g>
+        let nonZeroFound = false;
+        let texts = line.texts.map((e, i) => {
+            if (e.text !== '0' && !nonZeroFound) {
+                nonZeroFound = true;
+            }
+            let visibility = nonZeroFound && e.text !== 'x' ? 'visible' : 'hidden';
+            if (i === line.texts.length - 1 && !nonZeroFound && !line.hasOwnProperty('isCarryOver')) {
+                visibility = 'visible';
+            }
+            const fill = line.hasOwnProperty('isCarryOver') ? 'orange' : 'black';
+            return <text key={i} x={xStart + i * this.LETTER_WIDTH} y={y} style={{ fill: `${fill}`, fontSize: line.size, textAnchor: 'middle', visibility: `${visibility}`, fontWeight: e.weight ? e.weight : 'normal' }}>{e.text} </text>
+        });
+        return <g key={this.lineKey++}> {operation} {texts} </g>
     }
 
-    slantedText(text) {
-        return (<g key={this.g++}>> <defs>
-            <path id="path"
-                d="M 10 80 L 80 0" />
-        </defs>
-            <use xlinkHref="#path" fill="none" />
-            <text fontFamily="Verdana" fontSize="20">
-                <textPath xlinkHref="#path">{text}</textPath>
-            </text > </g>)
+    componentWillReceiveProps(nextProps) {
+        if (nextProps.check) {
+            this.showAnswer = true;
+        }
+        if (nextProps.new) {
+            this.constructProblem();
+            this.showAnswer = true;
+        }
+    }
+
+    formatSum() {
+        this.displayProblem();
+        this.displayAnswer();
+    }
+
+    addCarryOverLine(answer) {
+        const carryText = this.carryover();
+        let foundCarryDiigit = false;
+        for (let i = 0; i < carryText.length; i++) {
+            if (carryText[i] !== 'x') {
+                foundCarryDiigit = true;
+            }
+        }
+        if (!foundCarryDiigit) {
+            return;
+        }
+        const carryOverLine = this.numberToTextline(carryText);
+        carryOverLine.size = this.SMALL_FONT_HEIGHT;
+        carryOverLine.isCarryOver = true;
+        answer.textlines.push(carryOverLine);
+    }
+
+    displayAnswer() {
+        this.answer = {};
+        const answer = this.answer;
+        answer.textlines = [];
+        this.addCarryOverLine(answer);
+        answer.textlines.push(...this.problem.textlines);
+        answer.textlines.push(this.numberToTextline(this.answerArray));
+    }
+
+    displayProblem() {
+        this.problem = {};
+        this.problem.textlines = [];
+        for (let i = 0; i < this.addends.length; i++) {
+            const line = this.numberToTextline(this.addends[i]);
+            if (i > 0) {
+                line.operation = '+';
+            }
+            this.problem.textlines.push(line);
+        }
+        this.problem.textlines.push({ type: 'line' });
+    }
+
+    line() {
+        let y = this.Y - this.TEXT_HEIGHT / 2;
+        this.Y += this.LINE_HEIGHT + 10;
+
+        return (<line key={this.lineKey++} x1={this.X} y1={y} x2={this.X + this.length * this.LETTER_WIDTH + this.LETTER_WIDTH / 2} y2={y} style={{ stroke: 'rgb(0,0,0)', strokeWidth: '2' }} />)
+    }
+
+    numberToTextline(number) {
+        let textline = {};
+        textline.type = 'textline';
+        textline.size = this.BIG_FONT_HEIGHT;
+        textline.texts = number.map((d) => {
+            return {
+                text: d.toString()
+            }
+        })
+        return textline;
+    }
+
+    renderSum(s, i, border, anchor) {
+        return <div className={classNames('sum1', border)} >
+            <Index index={anchor} />
+            <svg ref={'sum' + i} style={{}}>
+                {this.Y = this.Y_START} {this.X = this.X_START}}
+                {
+                    s.textlines.map((l) => {
+                        switch (l.type) {
+                            case 'textline':
+                                return this.textline(l);
+                            case 'line':
+                                return this.line();
+                            default:
+                                break;
+                        }
+                    })
+                }
+            </svg>
+        </div>
+    }
+
+    carryover() {
+
+        let previousCarryover = 0;
+        let sum = 0;
+        let carryoverDigits = [];
+        let carry = 0;
+        for (let i = this.addends[0].length - 1; i >= 0; i--) {
+            for (let j = 0; j < this.addends.length; j++) {
+                sum += parseInt(this.addends[j][i], 10);
+            }
+            if (sum > 9) {
+                let sumString = sum.toString();
+                carry = sumString.slice(0, sumString.length - 1);
+                carryoverDigits.push(carry)
+                sum = parseInt(carry);
+            } else {
+                sum = 0;
+                carryoverDigits.push('x')
+            }
+        }
+        carryoverDigits.unshift('x');
+        carryoverDigits[carryoverDigits.length - 1] = 'x';
+        return carryoverDigits.reverse();
     }
 
     render() {
-        let answerCircleColor = null;
-        if (this.showAnswer) {
-            answerCircleColor = this.answerCorrect ? 'green' : 'red';
-        }
-        let sum = this.props.sum;
         return (
-            <div className="sumContainer" style={{ display: 'flex', margin: '20px' }}>
-                <div className={classNames(
-                    'sum1', 'blueBorder')}>
-                    <Index index='Q' />
-                    <svg ref="problem" style={{ paddingLeft: '20px' }}>
-                        {this.Y = this.Y_START} {this.X = this.X_START} {this.inputs = []}
-                        {sum.problem.steps.map((e, i) => {
-                            switch (e.type) {
-                                case 'number':
-                                    return this.textline(e)
-                                case 'line':
-                                    return this.line(sum.inputs);
-                                case 'inputs':
-                                    return this.input(sum.inputs, this.showAnswer ? this.userAnswer : null,
-                                        'blue', answerCircleColor, false);
-                                case 'answer':
-                                    return this.answerr(e)
-                                default:
-                            }
-                        })}
-                        }
-                    </svg>
-                </div>
-
+            <div className="sumContainer" style={{ display: 'flex', margin: '20px', flexWrap: 'wrap' }}>
+                {this.renderSum(this.problem, 0, 'blueBorder', 'Q')}
                 {this.showAnswer &&
-                    <div className={classNames('sum1', 'greenBorder')}>
-                        <Index index='A' />
-                        <svg ref="answer" style={{ paddingLeft: '20px' }} >
-                            {this.Y = this.Y_START} {this.X = this.X_START}
-                            {sum.answer.steps.map((e, i) => {
-                                switch (e.type) {
-                                    case 'number':
-                                        return this.textline(e)
-                                    case 'line':
-                                        return this.line(sum.inputs)
-                                    case 'carryover':
-                                        return this.carryover(e)
-                                    case 'answer':
-                                        return this.answerr(e)
-                                    default:
-                                }
-                            })}
-                            }
-                    </svg>
-                    </div>
+                    this.renderSum(this.answer, 1, 'greenBorder', 'A')
                 }
-            </div>
-        )
+            </div>)
     }
 }
 

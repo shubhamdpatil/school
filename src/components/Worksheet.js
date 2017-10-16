@@ -20,7 +20,7 @@ class Worksheet extends Component {
         this.keys = [];
         this.check = this.check.bind(this);
         this.newSum = this.newSum.bind(this);
-        this.selectedOperation = "multiplication";
+        this.selectedOperation = "addition";
         this.sums = [];
     }
 
@@ -75,7 +75,6 @@ class Worksheet extends Component {
                     {<Index index={i + 1} />}
                     <Mult key={i} check={this.state.check} new={this.state.new} /> </div>);
             }
-
         } else if (operation === 'division') {
             this.selectedOperation = "division"
             for (let i = 0; i < 1; i++) {
@@ -84,21 +83,12 @@ class Worksheet extends Component {
                     <Div key={i} check={this.state.check} new={this.state.new} /> </div>);
             }
         } else if (operation === 'addition') {
-            this.selectedOperation = "addition"
-            if (this.state.new) {
-                this.sums = [];
-                for (let i = 0; i < count; i++) {
-                    this.sums.push(getAdditionSum(rows, columns));
-                }
-            }
-            this.sums.map((e, i) => {
+            this.selectedOperation = "multiplication"
+            for (let i = 0; i < 1; i++) {
                 result.push(<div key={i} style={{ borderStyle: 'solid', borderColor: 'gray', margin: '10px 40px 10px 10px', position: 'relative' }} >
                     {<Index index={i + 1} />}
-                    <Add key={i} sum={e} check={this.state.check} /> </div>);
-            })
-            // for (let i = 0; i < 1; i++) {
-            //     result.push(<Add key={this.keys[i]} sum={sum} operation={operation} digits={digits} size={length} check={this.state.check} index={i + 1} />)
-            // }
+                    <Add key={i} check={this.state.check} new={this.state.new} /> </div>);
+            }
         } else if (operation === 'subtraction') {
             this.selectedOperation = "subtraction"
             for (let i = 0; i < 4; i++) {
