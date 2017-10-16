@@ -83,8 +83,8 @@ class Worksheet extends Component {
                     <Div key={i} check={this.state.check} new={this.state.new} /> </div>);
             }
         } else if (operation === 'addition') {
-            this.selectedOperation = "multiplication"
-            for (let i = 0; i < 1; i++) {
+            this.selectedOperation = "addition"
+            for (let i = 0; i < count; i++) {
                 result.push(<div key={i} style={{ borderStyle: 'solid', borderColor: 'gray', margin: '10px 40px 10px 10px', position: 'relative' }} >
                     {<Index index={i + 1} />}
                     <Add key={i} check={this.state.check} new={this.state.new} /> </div>);

@@ -25,7 +25,7 @@ class Add extends Component {
         this.X_START = 0;
         this.Y = this.Y_START;
         this.X = this.X_START;
-        this.showAnswer = true;
+        this.showAnswer = false;
         this.lineKey = 0;
         this.sums = this.constructProblem();
     }
@@ -101,7 +101,7 @@ class Add extends Component {
         }
         if (nextProps.new) {
             this.constructProblem();
-            this.showAnswer = true;
+            this.showAnswer = false;
         }
     }
 
