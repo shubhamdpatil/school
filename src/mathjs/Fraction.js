@@ -13,17 +13,13 @@ class Fraction extends React.Component {
 
     constructor(props) {
         super(props);
-        math.config({
-            number: 'Fraction'   // Default type of number:
-        });
-        this.showAnswer = true;
+        this.showAnswer = false;
         this.fraction1 = [];
         this.fraction2 = [];;
-        this.ne = '\\ne';
-        this.eq = '=';
-        this.answer = this.ne;
-        this.generateFraction();
+        this.ne = '\\style{color:red;margin:5px}{\\ne}';
+        this.eq = '\\style{color:green;margin:5px}{=}';
         this.g = 0;
+        this.generateFraction();
     }
 
     getRandomExcluding(exclude) {
@@ -40,7 +36,7 @@ class Fraction extends React.Component {
         }
         if (nextProps.new) {
             this.generateFraction();
-            this.showAnswer = true;
+            this.showAnswer = false;
         }
     }
 
@@ -50,19 +46,19 @@ class Fraction extends React.Component {
         this.fraction1.push(getRandomIntInclusive(NUMBER_RANGE[1].min, NUMBER_RANGE[1].max));
         this.fraction1.push(getRandomIntInclusive(NUMBER_RANGE[1].min, NUMBER_RANGE[1].max));
         const equal = getRandomIntInclusive(0, 1);
-        const multiple = getRandomIntInclusive(NUMBER_RANGE[1].min, NUMBER_RANGE[1].max);
+        this.multiple = getRandomIntInclusive(NUMBER_RANGE[1].min, NUMBER_RANGE[1].max);
         if (equal) {
-            this.fraction2.push(this.fraction1[0] * multiple);
-            this.fraction2.push(this.fraction1[1] * multiple);
+            this.fraction2.push(this.fraction1[0] * this.multiple);
+            this.fraction2.push(this.fraction1[1] * this.multiple);
             this.answer = this.eq;
         } else {
-            this.fraction2.push(this.fraction1[0] * multiple);
-            this.fraction2.push(this.fraction1[1] * this.getRandomExcluding(multiple));
+            this.fraction2.push(this.fraction1[0] * this.multiple);
+            this.fraction2.push(this.fraction1[1] * this.getRandomExcluding(this.multiple));
             this.answer = this.ne;
         }
     }
 
-    renderSum(i, border, anchor, answer) {
+    renderProblem(border, anchor) {
         const lhs = `\\frac{${this.fraction1[0]}}{${this.fraction1[1]}}`;
         const rhs = `\\frac{${this.fraction2[0]}}{${this.fraction2[1]}}`;
         const question = '{\\style{color:red;margin:10px}{?}}';
@@ -74,12 +70,36 @@ class Fraction extends React.Component {
                         <MathJax.Node inline>
                             {lhs}
                         </MathJax.Node>
-                        {!answer && <MathJax.Node inline>{question}</MathJax.Node>}
-                        {answer &&
-                            <MathJax.Node inline>
+                        <MathJax.Node inline>{question}</MathJax.Node>
+                        <MathJax.Node inline>
+                            {rhs}
+                        </MathJax.Node>
+                    </div>
+                </MathJax.Context>
+            </div >)
+    }
+
+    renderAnswer(border, anchor) {
+        const lhs = `\\frac{${this.fraction1[0]}}{${this.fraction1[1]}}`;
+        const rhs = `\\frac{${this.fraction2[0]}}{${this.fraction2[1]}}`;
+        const numeratorEquality = this.fraction1[0] * this.multiple === this.fraction2[0] ? this.eq : this.ne;
+        const denominatorEquality = this.fraction1[1] * this.multiple === this.fraction2[1] ? this.eq : this.ne;
+        const step = `{${this.fraction1[0]} \\times ${this.multiple} ${numeratorEquality} ${this.fraction2[0]} \\over${this.fraction1[1]} \\times ${this.multiple} ${denominatorEquality} ${this.fraction2[1]}}\\Longrightarrow`
+
+        return (
+            <div key={this.g++} className={classNames('sum1', border)} >
+                <Index index={anchor} />
+                <MathJax.Context>
+                    <div>
+                        <MathJax.Node inline>
+                            {step}
+                        </MathJax.Node>
+                        <MathJax.Node inline>
+                            {lhs}
+                        </MathJax.Node>
+                        <MathJax.Node inline>
                             {this.answer}
                         </MathJax.Node>
-                        }
                         <MathJax.Node inline>
                             {rhs}
                         </MathJax.Node>
@@ -91,15 +111,11 @@ class Fraction extends React.Component {
     render() {
         return (
             <div className="sumContainer" style={{ display: 'flex', margin: '20px', flexWrap: 'wrap' }}>
-                {this.renderSum(0, 'blueBorder', 0, false)}
-                {this.showAnswer && this.renderSum(1, 'greenBorder', 0, true)}
+                {this.renderProblem('blueBorder', 'Q')}
+                {this.showAnswer && this.renderAnswer('greenBorder', 'A')}
             </div>
         )
     }
 }
-
-/* Fraction1.childContextTypes = {
-    MathJax: React.PropTypes.object
-}; */
 
 export default Fraction;
