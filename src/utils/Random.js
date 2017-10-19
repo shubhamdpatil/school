@@ -6,6 +6,10 @@ export function getRandomIntInclusive(min, max) {
 }
 
 export const NUMBER_RANGE = {
+    1: {
+        min: 1,
+        max: 9
+    },
     2: {
         min: 10,
         max:99

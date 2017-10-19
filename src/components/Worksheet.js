@@ -5,12 +5,16 @@ import Sub from './Sub'
 import Addition from './../store/Addition';
 import Mult from './Mult';
 import Div from './Div';
+import Fraction from './../mathjs/Fraction';
 import getAdditionSum from './../sums/addition'
+
+
 const util = require('util')
 
 function Index(props) {
     return <div className="circle"> {props.index} </div>
 }
+
 
 class Worksheet extends Component {
 
@@ -20,7 +24,7 @@ class Worksheet extends Component {
         this.keys = [];
         this.check = this.check.bind(this);
         this.newSum = this.newSum.bind(this);
-        this.selectedOperation = "addition";
+        this.selectedOperation = "fraction";
         this.sums = [];
     }
 
@@ -45,7 +49,6 @@ class Worksheet extends Component {
     }
 
     componentDidMount() {
-        // let mul = new Multiplication(2, 2);
         this.setState({ new: false, check: false })
     }
 
@@ -97,6 +100,14 @@ class Worksheet extends Component {
                     <Sub key={i} check={this.state.check} new={this.state.new} /> </div>);
             }
         }
+        else if (operation === 'fraction') {
+            this.selectedOperation = "fraction"
+            for (let i = 0; i < 4; i++) {
+                result.push(<div key={i} style={{ borderStyle: 'solid', borderColor: 'gray', margin: '10px 40px 10px 10px', position: 'relative' }} >
+                    {<Index index={i + 1} />}
+                    <Fraction key={i} check={this.state.check} new={this.state.new} /> </div>);
+            }
+        }
         return result;
     }
 
@@ -109,6 +120,7 @@ class Worksheet extends Component {
                         <option value="subtraction">Subtraction</option>
                         <option value="multiplication">Multiplication</option>
                         <option value="division">Division</option>
+                        <option value="fraction">Fraction</option>
                     </select>
                     <label> Columns </label>
                     <input type="text" ref="columns" defaultValue={3} placeholder="3" />
@@ -120,7 +132,9 @@ class Worksheet extends Component {
                     <button onClick={this.newSum}> New </button>
                 </div>
                 <div className="container" style={{ margin: '10px' }}>
-                    {this.getSums()}
+                    <div>
+                        {this.getSums()}
+                    </div>
                 </div>
             </div >)
     }
