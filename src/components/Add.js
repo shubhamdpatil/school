@@ -31,7 +31,6 @@ class Add extends Component {
     }
 
     setDimension() {
-        let ns = 'http://www.w3.org/2000/svg'
         for (let i = 0; i <= 1; i++) {
             const el = findDOMNode(this.refs['sum' + i]);
             if (el) {

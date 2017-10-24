@@ -1,3 +1,5 @@
+/*global window*/
+
 import React, { Component } from 'react';
 import styles from './../styles/Globals.css';
 import Add from './Add'
@@ -7,6 +9,7 @@ import Mult from './Mult';
 import Div from './Div';
 import Fraction from './../mathjs/Fraction';
 import getAdditionSum from './../sums/addition'
+
 
 
 const util = require('util')
@@ -50,6 +53,8 @@ class Worksheet extends Component {
 
     componentDidMount() {
         this.setState({ new: false, check: false })
+        //window.scroll(0, 100);
+      //  window.scroll(0, 0);
     }
 
     getSums() {
@@ -102,7 +107,17 @@ class Worksheet extends Component {
         }
         else if (operation === 'fraction') {
             this.selectedOperation = "fraction"
-            for (let i = 0; i < 4; i++) {
+            for (let i = 0; i < 1; i++) {
+                result.push(<div key={i} style={{ borderStyle: 'solid', borderColor: 'gray', margin: '10px 40px 10px 10px', position: 'relative' }} >
+                    {<Index index={i + 1} />}
+                    <Fraction key={i} check={this.state.check} new={this.state.new} />
+                </div>
+                );
+            }
+        }
+        else if (operation === 'fraction2') {
+            this.selectedOperation = "fraction2"
+            for (let i = 0; i < 1; i++) {
                 result.push(<div key={i} style={{ borderStyle: 'solid', borderColor: 'gray', margin: '10px 40px 10px 10px', position: 'relative' }} >
                     {<Index index={i + 1} />}
                     <Fraction key={i} check={this.state.check} new={this.state.new} /> </div>);
@@ -121,6 +136,7 @@ class Worksheet extends Component {
                         <option value="multiplication">Multiplication</option>
                         <option value="division">Division</option>
                         <option value="fraction">Fraction</option>
+                        <option value="fraction2">Fraction2</option>
                     </select>
                     <label> Columns </label>
                     <input type="text" ref="columns" defaultValue={3} placeholder="3" />
