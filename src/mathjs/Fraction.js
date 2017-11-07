@@ -1,10 +1,12 @@
-/*global MathJax*/
+/*global MathJax, d3pie*/
+/*global */
 import React, { Component, ReactDOM } from 'react';
 import classNames from 'classnames';
 import { getRandomIntInclusive, NUMBER_RANGE } from './../utils/Random'
 import { findDOMNode } from 'react-dom';
 import MyPopper from './../components/Popper'
 import Popper from 'popper.js'
+import Pie from './../components/Pie'
 
 
 
@@ -34,7 +36,7 @@ function Jax(props) {
 class Fraction extends React.Component {
     constructor(props) {
         super(props);
-        this.showAnswer = true;
+        this.showAnswer = false;
         this.fraction1 = [];
         this.fraction2 = [];;
         this.ne = '\\style{color:red}{\\ne}';
@@ -42,7 +44,6 @@ class Fraction extends React.Component {
         this.g = 0;
         this.question = '{\\style{color:red;margin:10px}{?}}';
         this.generateFraction();
-        this.steps = [];
         this.showPopper = 'block'
         this.popperRefs = [];
         this.sumRefs = [];
@@ -70,11 +71,18 @@ class Fraction extends React.Component {
         }
     }
 
-    styleFraction() {
+    answerStep() {
         const lhs = `\\frac{${this.fraction1[0]}}{${this.fraction1[1]}}`;
         const rhs = `\\frac{${this.fraction2[0]}}{${this.fraction2[1]}}`;
         this.lhs = `{\\style{color:Violet}{${lhs}}}`;
         this.rhs = `{\\style{color:Tomato}{${rhs}}}`;
+        this.step2 = `{${this.lhs}} ${this.answer} {${this.rhs}}`
+    }
+
+    exchangeFractions() {
+        const temp = [...this.fraction2];
+        this.fraction2 = [...this.fraction1];
+        this.fraction1 = [...temp];
     }
 
     generateFraction() {
@@ -84,16 +92,63 @@ class Fraction extends React.Component {
         this.fraction1.push(getRandomIntInclusive(NUMBER_RANGE[1].min, NUMBER_RANGE[1].max));
         const equal = getRandomIntInclusive(0, 1);
         this.multiple = getRandomIntInclusive(NUMBER_RANGE[1].min, NUMBER_RANGE[1].max);
+        const numeratorEqual = getRandomIntInclusive(0, 1);
+        let numeratorEquality = null;
+        let denominatorEquality = null;
+        const multiplySum = getRandomIntInclusive(0, 1);
+        let sign = null;
+
         if (equal) {
             this.fraction2.push(this.fraction1[0] * this.multiple);
             this.fraction2.push(this.fraction1[1] * this.multiple);
             this.answer = this.eq;
+            this.step2Hint = `Fractions are equal`;
+            numeratorEquality = this.eq;
+            denominatorEquality = this.eq;
+            if (multiplySum) {
+                sign = '\\times';
+                this.step1Hint = `In numerator ${this.fraction2[0]} is ${this.fraction1[0]} times ${this.multiple} and in denominator ${this.fraction2[1]} is ${this.fraction1[1]}  times ${this.multiple}`
+            }
+            else {
+                sign = '\\div';
+                this.exchangeFractions();
+                this.step1Hint = `In numerator ${this.fraction1[0]} divided by ${this.multiple} is ${this.fraction2[0]} and in denominator ${this.fraction1[1]} divided by ${this.multiple} is ${this.fraction2[1]} `
+            }
+
         } else {
-            this.fraction2.push(this.fraction1[0] * this.multiple);
-            this.fraction2.push(this.fraction1[1] * this.getRandomExcluding(this.multiple));
+            this.step2Hint = `Fractions are not equal`;
+            if (numeratorEqual) {
+                this.fraction2.push(this.fraction1[0] * this.multiple);
+                this.fraction2.push(this.fraction1[1] * this.getRandomExcluding(this.multiple));
+            } else {
+                this.fraction2.push(this.fraction1[1] * this.getRandomExcluding(this.multiple));
+                this.fraction2.push(this.fraction1[1] * this.multiple);
+            }
+
+            if (multiplySum) {
+                sign = '\\times';
+                if (numeratorEqual) {
+                    this.step1Hint = `In numerator ${this.fraction2[0]} is ${this.fraction1[0]} times ${this.multiple}, but in denominator ${this.fraction2[1]} is not ${this.fraction1[1]}  times ${this.multiple}`
+
+                } else {
+                    this.step1Hint = `In numerator ${this.fraction2[0]} is not ${this.fraction1[0]} times ${this.multiple}, but in denominator ${this.fraction2[1]} is ${this.fraction1[1]}  times ${this.multiple}`
+                }
+            } else {
+                sign = '\\div';
+                this.exchangeFractions();
+                if (numeratorEqual) {
+                    this.step1Hint = `In numerator ${this.fraction1[0]} divided by ${this.multiple} is ${this.fraction2[0]}, but in denominator ${this.fraction1[1]} divided by ${this.multiple} is not ${this.fraction2[1]}`
+                } else {
+                    this.step1Hint = `In numerator ${this.fraction1[0]} divided by ${this.multiple} is not ${this.fraction2[0]}, but in denominator ${this.fraction1[1]} divided by ${this.multiple} is ${this.fraction2[1]}`
+                }
+            }
+            numeratorEquality = numeratorEqual ? this.eq : this.ne;
+            denominatorEquality = !numeratorEqual ? this.eq : this.ne;
             this.answer = this.ne;
+
         }
-        this.styleFraction();
+        this.step1 = `{${this.fraction1[0]} ${sign} ${this.multiple} \\over ${this.fraction1[1]} ${sign} ${this.multiple}} {${numeratorEquality} \\over ${denominatorEquality}}{${this.fraction2[0]}  \\over ${this.fraction2[1]}}`
+        this.answerStep();
     }
 
     createAndUpdatePoppers() {
@@ -125,7 +180,8 @@ class Fraction extends React.Component {
         this.createPoppers();
         MathJax.Hub.Register.StartupHook("End", () => {
             this.updatePoppers();
-            //this.popper.update();
+            //  d3pie.redraw();
+            Pie()
         })
     }
 
@@ -170,32 +226,22 @@ class Fraction extends React.Component {
     }
 
     renderAnswer(border, anchor) {
-        const numeratorEquality = this.fraction1[0] * this.multiple === this.fraction2[0] ? this.eq : this.ne;
-        const numeratorEqual = numeratorEquality === this.eq ? '' : 'not'
-        const denominatorEquality = this.fraction1[1] * this.multiple === this.fraction2[1] ? this.eq : this.ne;
-        const denominatorEqual = denominatorEquality === this.eq ? '' : 'not'
-        const step1 = `{${this.fraction1[0]} \\times ${this.multiple} \\over ${this.fraction1[1]} \\times ${this.multiple}} {${numeratorEquality} \\over ${denominatorEquality}}{${this.fraction2[0]}  \\over ${this.fraction2[1]}}`
-        const step2 = `{${this.lhs}} ${this.answer} {${this.rhs}}`
-        const but = denominatorEqual === 'not' ? 'but' : '';
-        const step1Hint = `${this.fraction2[0]} is ${numeratorEqual} ${this.fraction1[0]} times ${this.multiple}, ${but} ${this.fraction2[1]} is ${denominatorEqual} ${this.fraction1[1]}  times ${this.multiple}`
-        const step2Hint = this.answer === this.eq ? `Fractions are equal` : `Fractions are not equal`
-
         return (
             <div ref={this.props.ID}>
                 <div key={this.g++} className={classNames('sum1', border)} ref={this.addSumRef} >
                     <MyPopper display={this.showPopper} refId={this.addPopperRef} >
-                        {step1Hint}
+                        {this.step1Hint}
                     </MyPopper>
                     <Jax inline>
-                        {step1}
+                        {this.step1}
                     </Jax>
                 </div>
                 <div key={this.g++} className={classNames('sum1', border)} ref={this.addSumRef} >
                     <MyPopper display={this.showPopper} refId={this.addPopperRef} >
-                        {step2Hint}
+                        {this.step2Hint}
                     </MyPopper>
                     <Jax inline>
-                        {step2}
+                        {this.step2}
                     </Jax>
                 </div>
             </div >)
@@ -209,6 +255,18 @@ class Fraction extends React.Component {
     }
 
     render() {
+        this.resetPoppers();
+        return (
+            <div id="sum11" ref={el => this.el = el} style={{
+                display: 'inline-flex', margin: '20px', flexWrap: 'row wrap',
+                flexDirection: 'column', justifyContent: 'center'
+            }}>
+                {this.renderProblem('blueBorder', 'Q')}
+            </div >
+        )
+    }
+
+    render1() {
         this.resetPoppers();
         return (
             <div style={{

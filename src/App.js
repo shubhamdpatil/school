@@ -1,13 +1,17 @@
 import React, { Component } from 'react';
 import './App.css';
 import Worksheet from './components/Worksheet'
+import Flex from './components/Flex'
 
 
 class App extends Component {
   render() {
     return (
       <div className="App">
-        <Worksheet> </Worksheet>  
+        <Worksheet> </Worksheet>
+
+        {/*  <Flex /> */}
+
       </div>
     );
   }

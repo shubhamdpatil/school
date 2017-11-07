@@ -8,6 +8,7 @@ import Addition from './../store/Addition';
 import Mult from './Mult';
 import Div from './Div';
 import Fraction from './../mathjs/Fraction';
+import PieFraction from './../mathjs/PieFraction';
 import getAdditionSum from './../sums/addition'
 
 
@@ -27,7 +28,7 @@ class Worksheet extends Component {
         this.keys = [];
         this.check = this.check.bind(this);
         this.newSum = this.newSum.bind(this);
-        this.selectedOperation = "fraction";
+        this.selectedOperation = "fraction2";
         this.sums = [];
     }
 
@@ -54,7 +55,7 @@ class Worksheet extends Component {
     componentDidMount() {
         this.setState({ new: false, check: false })
         //window.scroll(0, 100);
-      //  window.scroll(0, 0);
+        //  window.scroll(0, 0);
     }
 
     getSums() {
@@ -118,9 +119,11 @@ class Worksheet extends Component {
         else if (operation === 'fraction2') {
             this.selectedOperation = "fraction2"
             for (let i = 0; i < 1; i++) {
-                result.push(<div key={i} style={{ borderStyle: 'solid', borderColor: 'gray', margin: '10px 40px 10px 10px', position: 'relative' }} >
+                result.push(<div key={i} style={{
+                    borderStyle: 'solid', borderColor: 'gray', margin: '10px 40px 10px 10px', position: 'relative'
+                }} >
                     {<Index index={i + 1} />}
-                    <Fraction key={i} check={this.state.check} new={this.state.new} /> </div>);
+                    <PieFraction check={this.state.check} new={this.state.new} /> </div>);
             }
         }
         return result;
