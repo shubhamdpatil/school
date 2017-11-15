@@ -1,9 +1,0 @@
-//*[@id="j_username"]
-#j_username
-
-//*[@id="login-button"]
-
-//*[@id="isc-login-swoosh"]/div[1]/form/div/fieldset/table/tbody/tr[3]/td[1]/input
-
-
-<input type="button" id="xxxxxxx" name="submitBtn" onclick="document.getElementById('loginButtonsWaitingDiv').style.visibility='visible'; this.disabled=true; this.form.submit();" value="OK">
