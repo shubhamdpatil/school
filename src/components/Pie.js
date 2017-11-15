@@ -14,17 +14,23 @@ class Pie extends Component {
     }
 
     shouldComponentUpdate(nextProps, nextState) {
+        this.renderPie(this.el);
         return false;
     }
 
     render() {
-        return <div ref={(el => { this.el = el; this.renderPie(el) })}> </div>
+        return <div ref={(el => {
+            this.el = el;
+            if (el !== null)
+                this.renderPie(this.el)
+        })}> </div>
     }
 
     componentWillReceiveProps(nextProps) {
     }
 
     componentDidUpdate() {
+
     }
 
     componentDidMount() {
@@ -40,7 +46,6 @@ class Pie extends Component {
         var h = this.props.height//300;
 
         const dataset = this.props.data;
-        console.log('dataset ' + JSON.stringify(dataset))
         var outerRadius = w / 2.5;
         var innerRadius = 0;
         var arc = d3.arc()
@@ -152,7 +157,6 @@ class Pie extends Component {
 
         arcs.append("g")
             .attr("transform", function (d, i) {
-                //  return "translate(" + arc.centroid(d) + ")";
                 const d1 = [];
                 const angle = (d.startAngle + (d.endAngle - d.startAngle) / 2) - (Math.PI / 2)
                 const scale = 0.7
@@ -166,19 +170,20 @@ class Pie extends Component {
                 return d.data.label;
             });
 
-
-        MathJax.Hub.Register.StartupHook("End", function () {
-            arcs.selectAll('.jax').each(function () {
-                const self = d3.select(this);
-                const g = self.select('text>span>svg');
-                if (g.node()) {
-                    g.remove();
-                    self.append(function () {
-                        return g.node();
-                    });
-                }
-            });
-        });
+        MathJax.Hub.Queue(() => {
+            MathJax.Hub.Queue(["Typeset", MathJax.Hub, function () {
+                arcs.selectAll('.jax').each(function () {
+                    const self = d3.select(this);
+                    const g = self.select('text>span>svg');
+                    if (g.node()) {
+                        g.remove();
+                        self.append(function () {
+                            return g.node();
+                        });
+                    }
+                });
+            }]);
+        })
     }
 }
 

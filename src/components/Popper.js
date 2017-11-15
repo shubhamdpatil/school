@@ -1,12 +1,14 @@
 
 import React from 'react';
 
-function MyPopper(props) {
+function Hint(props) {
     return (<div className="popper" id="popper1" ref={props.refId} style={{display:props.display}}>
-        <p className="bold">{props.children}</p>
+        <p className="bold">
+            {props.children}
+        </p>
         <div className="popper__arrow"></div>
     </div>)
 }
 
-export default MyPopper;
+export default Hint;
 

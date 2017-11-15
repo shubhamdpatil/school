@@ -10,6 +10,7 @@ import Div from './Div';
 import Fraction from './../mathjs/Fraction';
 import PieFraction from './../mathjs/PieFraction';
 import getAdditionSum from './../sums/addition'
+import Indices from './Indices'
 
 
 
@@ -30,6 +31,7 @@ class Worksheet extends Component {
         this.newSum = this.newSum.bind(this);
         this.selectedOperation = "fraction2";
         this.sums = [];
+        this.g = 0;
     }
 
     check() {
@@ -119,12 +121,16 @@ class Worksheet extends Component {
         else if (operation === 'fraction2') {
             this.selectedOperation = "fraction2"
             for (let i = 0; i < 1; i++) {
-                result.push(<div key={i} style={{
+                result.push(<div key={this.g++} style={{
                     borderStyle: 'solid', borderColor: 'gray', margin: '10px 40px 10px 10px', position: 'relative'
                 }} >
                     {<Index index={i + 1} />}
                     <PieFraction check={this.state.check} new={this.state.new} /> </div>);
             }
+        }
+        else if (operation === 'indices') {
+            this.selectedOperation = "indices";
+            result.push(<Indices key={1} base="5" />)
         }
         return result;
     }
@@ -140,6 +146,7 @@ class Worksheet extends Component {
                         <option value="division">Division</option>
                         <option value="fraction">Fraction</option>
                         <option value="fraction2">Fraction2</option>
+                        <option value="indices">Indices</option>
                     </select>
                     <label> Columns </label>
                     <input type="text" ref="columns" defaultValue={3} placeholder="3" />
