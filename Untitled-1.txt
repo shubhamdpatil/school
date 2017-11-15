@@ -1,1 +1,0 @@
-Ram has {x | x > 10 } mangoes. He 
