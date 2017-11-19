@@ -11,6 +11,7 @@ import Fraction from './../mathjs/Fraction';
 import PieFraction from './../mathjs/PieFraction';
 import getAdditionSum from './../sums/addition'
 import Indices from './Indices'
+import Lcm from './Lcm'
 
 
 
@@ -29,7 +30,7 @@ class Worksheet extends Component {
         this.keys = [];
         this.check = this.check.bind(this);
         this.newSum = this.newSum.bind(this);
-        this.selectedOperation = "fraction2";
+        this.selectedOperation = "lcm";
         this.sums = [];
         this.g = 0;
     }
@@ -131,6 +132,9 @@ class Worksheet extends Component {
         else if (operation === 'indices') {
             this.selectedOperation = "indices";
             result.push(<Indices key={1} base="5" />)
+        } else if (operation === 'lcm') {
+            this.selectedOperation = "lcm";
+            result.push(<Lcm key={1} check={this.state.check} />)
         }
         return result;
     }
@@ -147,6 +151,7 @@ class Worksheet extends Component {
                         <option value="fraction">Fraction</option>
                         <option value="fraction2">Fraction2</option>
                         <option value="indices">Indices</option>
+                        <option value="lcm">LCM</option>
                     </select>
                     <label> Columns </label>
                     <input type="text" ref="columns" defaultValue={3} placeholder="3" />
