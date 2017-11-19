@@ -39,13 +39,17 @@ class Lcm extends React.Component {
         super(props);
         this.showAnswer = false;
         this.k = 0;
-        this.sumsMap = new Map();
         this.generateSums();
     }
 
     componentWillReceiveProps(nextProps) {
         if (nextProps.check) {
             this.showAnswer = true;
+        }
+        if (nextProps.new) {
+            this.showAnswer = false;
+            this.generateSums();
+
         }
     }
 
@@ -85,6 +89,7 @@ class Lcm extends React.Component {
 
     generateSums() {
         const sums = this.sums = [];
+        this.sumsMap = new Map();
         for (let i = 0; i < 25; i++) {
             const s = this.sum();
             if (!this.sumsMap.get(s.key)) {
@@ -114,6 +119,9 @@ class Lcm extends React.Component {
         const align = this.showAnswer ? 'left' : 'center'
         const width = !this.showAnswer ? '200px' : '900px'
         this.sums.map((sum, i) => {
+            if (i === 0) {
+                console.log('sum: ' + JSON.stringify(sum))
+            }
             const first = sum.first > sum.second ? sum.first : sum.second;
             const second = sum.second < sum.first ? sum.second : sum.first;
             renderedSums.push(<div key={this.k++} style={{ width: `${width}`, margin: '20px', display: 'flex', justifyContent: `${align}` }}

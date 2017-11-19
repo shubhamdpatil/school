@@ -34,7 +34,7 @@ function Index(props) {
 }
 
 
-class Lcm extends React.Component {
+class WholeFraction extends React.Component {
     constructor(props) {
         super(props);
         this.showAnswer = false;
@@ -162,4 +162,4 @@ class Lcm extends React.Component {
     }
 }
 
-export default Lcm;
+export default WholeFraction;
