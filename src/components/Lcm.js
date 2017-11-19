@@ -118,9 +118,6 @@ class Lcm extends React.Component {
         const align = this.showAnswer ? 'left' : 'center'
         const width = !this.showAnswer ? '200px' : '900px'
         this.sums.map((sum, i) => {
-            if (i === 0) {
-                console.log('sum: ' + JSON.stringify(sum))
-            }
             const first = sum.first > sum.second ? sum.first : sum.second;
             const second = sum.second < sum.first ? sum.second : sum.first;
             renderedSums.push(<div key={this.k++} style={{ width: `${width}`, margin: '20px', display: 'flex', justifyContent: `${align}` }}

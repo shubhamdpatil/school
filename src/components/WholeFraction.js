@@ -72,15 +72,7 @@ class WholeFraction extends React.Component {
     }
 
     key(first, second) {
-        let k;
-        if (first < second) {
-            k = `${first.toString(10)}${second.toString(10)}`
-        } else if (first > second) {
-            k = `${second.toString(10)}${first.toString(10)}`
-        } else {
-            k = `${first.toString(10)}${first.toString(10)}`
-        }
-        return k;
+        return `${first.toString(10)}${second.toString(10)}`
     }
 
     doesSumExist(sum) {
@@ -123,7 +115,6 @@ class WholeFraction extends React.Component {
             const first = sum.first > sum.second ? sum.first : sum.second;
             const second = sum.second < sum.first ? sum.second : sum.first;
             const showNumerator = sum.numerator > 0 ? true : false;
-            console.log('sum ' + JSON.stringify(sum))
             renderedSums.push(<div key={this.k++} style={{ width: `${width}`, margin: '20px', display: 'flex', justifyContent: `${align}` }}
                 className={classNames('sum1', 'blueBorder')} >
                 <Index index={i + 1} />
