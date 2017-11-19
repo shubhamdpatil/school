@@ -31,7 +31,7 @@ class Worksheet extends Component {
         this.keys = [];
         this.check = this.check.bind(this);
         this.newSum = this.newSum.bind(this);
-        this.selectedOperation = "lcm";
+        this.selectedOperation = "wholeFraction";
         this.sums = [];
         this.g = 0;
     }
@@ -138,7 +138,7 @@ class Worksheet extends Component {
             result.push(<Lcm key={1} check={this.state.check} new={this.state.new} />)
         } else if (operation === 'wholeFraction') {
             this.selectedOperation = "wholeFraction";
-            result.push(<WholeFraction key={1} check={this.state.check} />)
+            result.push(<WholeFraction key={1} check={this.state.check} new={this.state.new} />)
         }
         return result;
     }

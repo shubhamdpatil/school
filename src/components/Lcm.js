@@ -49,7 +49,6 @@ class Lcm extends React.Component {
         if (nextProps.new) {
             this.showAnswer = false;
             this.generateSums();
-
         }
     }
 

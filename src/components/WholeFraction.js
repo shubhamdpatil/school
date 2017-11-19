@@ -47,6 +47,10 @@ class WholeFraction extends React.Component {
         if (nextProps.check) {
             this.showAnswer = true;
         }
+        if (nextProps.new) {
+            this.showAnswer = false;
+            this.generateSums();
+        }
     }
 
     componentDidMount() {
@@ -111,31 +115,37 @@ class WholeFraction extends React.Component {
 
     renderSums() {
         const renderedSums = [];
-        const align = this.showAnswer ? 'left' : 'center'
-        const width = !this.showAnswer ? '200px' : '900px'
+        const align = this.showAnswer ? 'center' : 'center'
+        const width = !this.showAnswer ? '300px' : '300px'
+        //this.showAnswer = true;
+
         this.sums.map((sum, i) => {
             const first = sum.first > sum.second ? sum.first : sum.second;
             const second = sum.second < sum.first ? sum.second : sum.first;
+            const showNumerator = sum.numerator > 0 ? true : false;
+            console.log('sum ' + JSON.stringify(sum))
             renderedSums.push(<div key={this.k++} style={{ width: `${width}`, margin: '20px', display: 'flex', justifyContent: `${align}` }}
                 className={classNames('sum1', 'blueBorder')} >
                 <Index index={i + 1} />
                 <div style={{ display: 'flex', justifyContent: 'left', alignItems: 'center' }}>
                     <div>
                         <Jax>
-                            {sum.first},\ {sum.second}
+                            \frac{`{ ${sum.first}`}}{`{${sum.second}`}}
                         </Jax>
                     </div>
-                    {this.showAnswer && <span> <Jax> \ \Rightarrow {`\\style{ color: green; font - size: 40px } { ${sum.lcm} } `} </Jax>
-                        <div style={{ marginLeft: '20px', padding: '20px', display: 'flex', borderColor: 'coral', borderStyle: 'solid', flexDirection: 'column', borderWidth: '2px' }}>
-                            {this.showAnswer && <div style={{ display: 'flex' }}>
-                                <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'top', alignItems: 'top' }} >
-                                    {this.table(sum.first, sum.lcm)}
-                                </div>
-                                <div style={{ display: 'flex', flexDirection: 'column', marginLeft: '20px' }} >
-                                    {this.table(sum.second, sum.lcm)}
-                                </div>
-                            </div>}
-                        </div> </span>}
+                    {this.showAnswer &&
+                        <div >
+                            <Jax> = </Jax>
+                            <span style={{ color: 'green' }}> <Jax>
+                                {`${sum.wholeNumber}`}
+                            </Jax> </span>
+                            {showNumerator && <span style={{ color: 'green' }}>
+                                <Jax>
+                                    \frac{`{ ${sum.numerator}`}}{`{${sum.second}`}}
+                        </Jax>
+                            </span>}
+                        </div>
+                    }
                 </div>
             </div>)
         });
@@ -143,15 +153,19 @@ class WholeFraction extends React.Component {
     }
 
     sum() {
-        const first = getRandomIntInclusive(5, 12);
+        const first = getRandomIntInclusive(50, 100);
         const second = this.getRandomExcluding(5, 12, first);
         const lcm = math.lcm(first, second);
         const key = this.key(first, second)
+        const wholeNumber = Math.floor(first / second);
+        const numerator = first - second * wholeNumber;
         return {
             first,
             second,
             lcm,
-            key
+            key,
+            wholeNumber,
+            numerator
         }
     }
 
