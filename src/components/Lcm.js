@@ -52,14 +52,19 @@ class Lcm extends React.Component {
         }
     }
 
-    componentDidMount() {
-
-    }
-    componentDidUpdate(prevProps, prevState) {
+    typesetMathjax() {
         MathJax.Hub.Queue(() => {
             MathJax.Hub.Queue(["Typeset", MathJax.Hub, function () {
             }])
         })
+    }
+
+    componentDidMount() {
+        this.typesetMathjax();
+    }
+
+    componentDidUpdate(prevProps, prevState) {
+        this.typesetMathjax();
     }
 
     getRandomExcluding(min, max, exclude) {
@@ -147,8 +152,8 @@ class Lcm extends React.Component {
     }
 
     sum() {
-        const first = getRandomIntInclusive(5, 12);
-        const second = this.getRandomExcluding(5, 12, first);
+        const first = getRandomIntInclusive(2, 8);
+        const second = this.getRandomExcluding(2, 9, first);
         const lcm = math.lcm(first, second);
         const key = this.key(first, second)
         return {

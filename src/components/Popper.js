@@ -3,9 +3,9 @@ import React from 'react';
 
 function Hint(props) {
     return (<div className="popper" id="popper1" ref={props.refId} style={{display:props.display}}>
-        <p className="bold">
+        <div className="bold">
             {props.children}
-        </p>
+        </div>
         <div className="popper__arrow"></div>
     </div>)
 }

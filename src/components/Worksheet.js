@@ -27,83 +27,75 @@ class Worksheet extends Component {
 
     constructor(props) {
         super(props);
+        this.newOperation = this.selectedOperation = 'improperFraction';
         this.state = {}
-        this.keys = [];
-        this.check = this.check.bind(this);
-        this.newSum = this.newSum.bind(this);
-        this.selectedOperation = "wholeFraction";
+        this.checkCallback = this.checkCallback.bind(this);
+        this.newSumCallback = this.newSumCallback.bind(this);
+        this.change = this.change.bind(this);
+        this.new = true;
+        this.check = false;
         this.sums = [];
         this.g = 0;
     }
 
-    check() {
-        this.setState({ check: true })
+    checkCallback() {
+        console.log('check called')
+        if (!this.check) {
+            this.check = true;
+            this.setState({})
+        }
     }
 
-    newSum() {
-        this.setState({ new: true, check: false })
+    newSumCallback() {
+        console.log('new called')
+        this.new = true;
+        this.setState({})
     }
 
     componentDidUpdate(prevProps, prevState) {
-        this.setState({ new: false, check: false })
+        this.resetState();
+    }
+
+    resetState() {
+        this.check = false;
+        this.new = false;
     }
 
     shouldComponentUpdate(nextProps, nextState) {
-        if (nextState.new || nextState.check) {
-            return true;
-        } else {
-            return false;
-        }
+        return true;
     }
 
     componentDidMount() {
-        this.setState({ new: false, check: false })
-        //window.scroll(0, 100);
-        //  window.scroll(0, 0);
+        this.resetState();
     }
 
     getSums() {
-        if (!this.keys.length) {
-            let start = 0;
-            for (let i = 0; i < 10; i++) {
-                this.keys.push(++start);
-            }
-        }
-        if (this.state.new) {
-            let start = this.keys[this.keys.length - 1];
-            this.keys = [];
-            for (let i = 0; i < 10; i++) {
-                this.keys.push(++start);
-            }
-        }
         let result = [];
-        let operation = this.refs.operation ? this.refs.operation.value : this.selectedOperation;
+        const operation = this.selectedOperation;
         let columns = this.refs.columns ? parseInt(this.refs.columns.value) : 5;
         let rows = this.refs.rows ? parseInt(this.refs.rows.value) : 2;
         let count = this.refs.count ? parseInt(this.refs.count.value) : 10;
+        const key = this.new ? ++this.g : this.g
+
         if (operation === 'multiplication') {
-            this.selectedOperation = "multiplication"
             for (let i = 0; i < 10; i++) {
                 result.push(<div key={i} style={{ borderStyle: 'solid', borderColor: 'gray', margin: '10px 40px 10px 10px', position: 'relative' }} >
                     {<Index index={i + 1} />}
                     <Mult key={i} check={this.state.check} new={this.state.new} /> </div>);
             }
         } else if (operation === 'division') {
-            this.selectedOperation = "division"
             for (let i = 0; i < 1; i++) {
                 result.push(<div key={i} style={{ borderStyle: 'solid', borderColor: 'gray', margin: '10px 40px 10px 10px', position: 'relative' }} >
                     {<Index index={i + 1} />}
                     <Div key={i} check={this.state.check} new={this.state.new} /> </div>);
             }
         } else if (operation === 'addition') {
-            this.selectedOperation = "addition"
             for (let i = 0; i < count; i++) {
                 result.push(<div key={i} style={{ borderStyle: 'solid', borderColor: 'gray', margin: '10px 40px 10px 10px', position: 'relative' }} >
                     {<Index index={i + 1} />}
                     <Add key={i} check={this.state.check} new={this.state.new} /> </div>);
             }
         } else if (operation === 'subtraction') {
-            this.selectedOperation = "subtraction"
             for (let i = 0; i < 4; i++) {
                 result.push(<div key={i} style={{ borderStyle: 'solid', borderColor: 'gray', margin: '10px 40px 10px 10px', position: 'relative' }} >
                     {<Index index={i} />}
@@ -111,7 +103,6 @@ class Worksheet extends Component {
             }
         }
         else if (operation === 'fraction') {
-            this.selectedOperation = "fraction"
             for (let i = 0; i < 1; i++) {
                 result.push(<div key={i} style={{ borderStyle: 'solid', borderColor: 'gray', margin: '10px 40px 10px 10px', position: 'relative' }} >
                     {<Index index={i + 1} />}
@@ -121,33 +112,39 @@ class Worksheet extends Component {
             }
         }
         else if (operation === 'fraction2') {
-            this.selectedOperation = "fraction2"
             for (let i = 0; i < 1; i++) {
                 result.push(<div key={this.g++} style={{
                     borderStyle: 'solid', borderColor: 'gray', margin: '10px 40px 10px 10px', position: 'relative'
                 }} >
                     {<Index index={i + 1} />}
-                    <PieFraction check={this.state.check} new={this.state.new} /> </div>);
+                    <PieFraction check={this.check} new={this.new} /> </div>);
             }
         }
         else if (operation === 'indices') {
-            this.selectedOperation = "indices";
             result.push(<Indices key={1} base="5" />)
         } else if (operation === 'lcm') {
-            this.selectedOperation = "lcm";
-            result.push(<Lcm key={1} check={this.state.check} new={this.state.new} />)
-        } else if (operation === 'wholeFraction') {
-            this.selectedOperation = "wholeFraction";
-            result.push(<WholeFraction key={1} check={this.state.check} new={this.state.new} />)
+            result.push(<Lcm key={key} check={this.check} new={this.new} />)
+        } else if (operation === 'wholeFraction' || operation === 'improperFraction') {
+            const improper = operation === 'improperFraction' ? true : false;
+            result.push(<WholeFraction key={key} check={this.check} new={this.new} improper={improper}/>)
         }
         return result;
     }
 
+    change(event) {
+        this.newOperation = event.target.value;
+        if (this.selectedOperation !== this.newOperation) {
+            this.selectedOperation = this.newOperation;
+            this.setState({});
+        }
+    }
+
     render() {
+        console.log('render  ' + JSON.stringify(this.state))
         return (
             <div>
                 <div style={{ display: 'flex', justifyContent: 'space-around' }}>
-                    <select ref="operation" defaultValue={this.selectedOperation} >
+                    <select onChange={this.change} defaultValue={this.selectedOperation} >
                         <option value="addition" >Addition</option>
                         <option value="subtraction">Subtraction</option>
                         <option value="multiplication">Multiplication</option>
@@ -157,6 +154,7 @@ class Worksheet extends Component {
                         <option value="indices">Indices</option>
                         <option value="lcm">LCM</option>
                         <option value="wholeFraction">wholeFraction</option>
+                        <option value="improperFraction">ImproperFraction</option>
                     </select>
                     <label> Columns </label>
                     <input type="text" ref="columns" defaultValue={3} placeholder="3" />
@@ -164,8 +162,8 @@ class Worksheet extends Component {
                     <input type="text" ref="rows" defaultValue={3} placeholder="3" />
                     <label> Count </label>
                     <input type="text" ref="count" defaultValue={10} placeholder="3" />
-                    <button onClick={this.check}> Check </button>
-                    <button onClick={this.newSum}> New </button>
+                    <button onClick={this.checkCallback}> Check </button>
+                    <button onClick={this.newSumCallback}> New </button>
                 </div>
                 <div className="container" style={{ margin: '10px' }}>
                     <div>

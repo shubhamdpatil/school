@@ -40,10 +40,12 @@ class WholeFraction extends React.Component {
         this.showAnswer = false;
         this.k = 0;
         this.sumsMap = new Map();
+        console.log('WholeFraction constructor')
         this.generateSums();
     }
 
     componentWillReceiveProps(nextProps) {
+        console.log('componentWillReceiveProps nextProps.check ' + nextProps.check)
         if (nextProps.check) {
             this.showAnswer = true;
         }
@@ -53,14 +55,18 @@ class WholeFraction extends React.Component {
         }
     }
 
-    componentDidMount() {
-
-    }
-    componentDidUpdate(prevProps, prevState) {
+    typesetMathJax() {
         MathJax.Hub.Queue(() => {
             MathJax.Hub.Queue(["Typeset", MathJax.Hub, function () {
             }])
         })
+    }
+    componentDidMount() {
+        this.typesetMathJax();
+    }
+
+    componentDidUpdate(prevProps, prevState) {
+        this.typesetMathJax();
     }
 
     getRandomExcluding(min, max, exclude) {
@@ -80,6 +86,7 @@ class WholeFraction extends React.Component {
     }
 
     generateSums() {
+        console.log('generateSums')
         const sums = this.sums = [];
         for (let i = 0; i < 25; i++) {
             const s = this.sum();
