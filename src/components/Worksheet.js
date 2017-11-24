@@ -121,7 +121,7 @@ class Worksheet extends Component {
             }
         }
         else if (operation === 'indices') {
-            result.push(<Indices key={1} base="5" />)
+            result.push(<Indices check={this.check} new={this.new} />)
         } else if (operation === 'lcm') {
             result.push(<Lcm key={key} check={this.check} new={this.new} />)
         } else if (operation === 'wholeFraction' || operation === 'improperFraction') {

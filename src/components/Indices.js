@@ -41,15 +41,19 @@ class Indices extends React.Component {
         }
     }
 
-    componentDidMount() {
-
-    }
-
-    componentDidUpdate(prevProps, prevState) {
+    typesetMathjax() {
         MathJax.Hub.Queue(() => {
             MathJax.Hub.Queue(["Typeset", MathJax.Hub, function () {
             }])
         })
+    }
+
+    componentDidMount() {
+        this.typesetMathjax();
+    }
+
+    componentDidUpdate(prevProps, prevState) {
+        this.typesetMathjax();
     }
 
     generateIndices() {
