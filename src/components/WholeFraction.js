@@ -45,12 +45,12 @@ class WholeFraction extends React.Component {
     }
 
     componentWillReceiveProps(nextProps) {
-        console.log('componentWillReceiveProps nextProps.check ' + nextProps.check)
         if (nextProps.check) {
             this.showAnswer = true;
         }
         if (nextProps.new) {
             this.showAnswer = false;
+            console.log('WholeFraction componentWillReceiveProps')
             this.generateSums();
         }
     }
@@ -81,12 +81,7 @@ class WholeFraction extends React.Component {
         return `${first.toString(10)}${second.toString(10)}`
     }
 
-    doesSumExist(sum) {
-        const k = this.sumsMap.get(this.key)
-    }
-
     generateSums() {
-        console.log('generateSums')
         const sums = this.sums = [];
         for (let i = 0; i < 25; i++) {
             const s = this.sum();
@@ -96,21 +91,6 @@ class WholeFraction extends React.Component {
             }
         }
     }
-
-    table(number, lcm) {
-        let result = [];
-        for (let i = 1; i <= lcm / number; i++) {
-            const style = i === lcm / number ? `\\style{ color: green; font - size: 40px }` : ``
-            result.push(
-                <div key={this.k++} style={{ borderColor: 'coral', borderStyle: 'solid', borderWidth: '2px' }}>
-                    <Jax>
-                        {`${style}  {${number} \\times ${i} = ${number * i} `}}
-                    </Jax>
-                </div>)
-        }
-        return result;
-    }
-
 
     renderSums() {
         const renderedSums = [];
@@ -150,6 +130,53 @@ class WholeFraction extends React.Component {
         return renderedSums;
     }
 
+    renderImproperSums() {
+        const renderedSums = [];
+        const align = this.showAnswer ? 'center' : 'center'
+        const width = !this.showAnswer ? '300px' : '300px'
+        //this.showAnswer = true;
+
+        this.sums.map((sum, i) => {
+            const first = sum.first > sum.second ? sum.first : sum.second;
+            const second = sum.second < sum.first ? sum.second : sum.first;
+            const showNumerator = sum.numerator > 0 ? true : false;
+            renderedSums.push(<div key={this.k++} style={{ width: `${width}`, margin: '20px', display: 'flex', justifyContent: `${align}` }}
+                className={classNames('sum1', 'blueBorder')} >
+                <Index index={i + 1} />
+                <div style={{ display: 'flex', justifyContent: 'left', alignItems: 'center' }}>
+                    <div >
+                        <span> <Jax>
+                            {`${sum.wholeNumber}`}
+                        </Jax> </span>
+                        {showNumerator &&
+                            <Jax>
+                                \frac{`{ ${sum.numerator}`}}{`{${sum.second}`}}
+                        </Jax>
+                        }
+                    </div>
+                    {this.showAnswer &&
+                        <div>
+                            <Jax> = </Jax>
+                            <span style={{ color: 'green' }}>
+                                {showNumerator &&
+                                    <Jax>
+                                        \frac{`{ ${sum.first}`}}{`{${sum.second}`}}
+                        </Jax>
+                                }
+                                {!showNumerator &&
+                                    <Jax>
+                                        \frac{`{ ${sum.wholeNumber}`}}{`{1`}}
+                        </Jax>
+                                }
+                            </span>
+                        </div>
+                    }
+                </div>
+            </div>)
+        });
+        return renderedSums;
+    }
+
     sum() {
         const first = getRandomIntInclusive(50, 100);
         const second = this.getRandomExcluding(5, 12, first);
@@ -169,7 +196,7 @@ class WholeFraction extends React.Component {
 
     render() {
         return <div style={{ display: 'flex', flexWrap: 'wrap' }}>
-            {this.renderSums()}
+            {this.props.improper ? this.renderImproperSums() : this.renderSums()}
         </div>
     }
 }
