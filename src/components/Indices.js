@@ -83,9 +83,9 @@ function Button(props) {
     return (
         <div>
             <button style={{
-                backgroundColor: '#008CBA',
+                backgroundColor: props.active ? '#e7e7e7' : '#008CBA',
                 border: 'none',
-                color: 'white',
+                color: props.active ? 'black' : 'white',
                 padding: '10px',
                 textAlign: 'center',
                 width: '150px',
@@ -154,7 +154,7 @@ class Indices extends React.Component {
             obj.baseArray.push(getRandomIntInclusive(1, 9));
 
             if (this.currentActive == LAWS.RANDOM)
-                obj.op_index = getRandomIntInclusive(0, 3); // the law we are using.
+                obj.op_index = getRandomIntInclusive(0, 5); // the law we are using.
             else
                 obj.op_index = this.currentActive
 
@@ -185,12 +185,17 @@ class Indices extends React.Component {
                     break;
 
                 case LAWS.MUL:
-                    powerCount = this.level == LEVEL.EASY ? 2 : getRandomIntInclusive(3, 5);
+                    powerCount = this.level == LEVEL.EASY ? 2 : getRandomIntInclusive(3, 4);
                     obj.result = 1;
                     while (powerCount--) {
                         let p = getRandomIntInclusive(0, 5)
-                        obj.powerArray.push(p);
-                        obj.result *= p
+                        if (obj.powerArray.indexOf(p) == -1) {
+                            obj.powerArray.push(p);
+                            obj.result *= p
+                        }
+                        else {
+                            powerCount++;
+                        }
                     }
                     break;
 
@@ -314,8 +319,8 @@ class Indices extends React.Component {
                             <Popper className="popper" placement="right">
                                 <Arrow className="popper__arrow" />
                                 <div style={{ fontSize: '0.5em' }}>
-                                    आधार({obj.base1}) सारखा आहे म्हणून
-                                    दोन्ही संख्येच्या घातांकाची({midSteps} = {obj.result}) बेरीज होणार.
+                                    पाया({obj.base1}) सारखा आहे म्हणून
+                                    संख्येच्या घातांकाची({midSteps} = {obj.result}) बेरीज होणार.
                                 </div>
                             </Popper>
                         </Manager>
@@ -350,8 +355,8 @@ class Indices extends React.Component {
                             <Popper className="popper" placement="right">
                                 <Arrow className="popper__arrow" />
                                 <div style={{ fontSize: '0.5em' }}>
-                                    आधार({obj.base1}) सारखा आहे म्हणून
-                                    दोन्ही संख्येच्या घातांकाची({obj.p1} - {obj.p2} = {obj.result}) वजाबाकी होणार.
+                                    पाया({obj.base1}) सारखा आहे म्हणून
+                                    संख्येच्या घातांकाची({obj.p1} - {obj.p2} = {obj.result}) वजाबाकी होणार.
                                 </div>
                             </Popper>
                         </Manager>
@@ -666,7 +671,7 @@ class Indices extends React.Component {
 
                 {/* this.formula(this.currentActive) */}
 
-                {([LAWS.ADD, LAWS.MUL, LAWS.DISTRIBUTE_MUL].indexOf(this.currentActive) != -1) &&
+                {([LAWS.ADD, LAWS.SUB, LAWS.MUL, LAWS.DISTRIBUTE_MUL, LAWS.RANDOM].indexOf(this.currentActive) != -1) &&
                     <div>
                         <select value={this.level} style={_select_style} onChange={this.changeHandler}>
                             <option value="easy">Easy</option>
