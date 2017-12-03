@@ -16,7 +16,15 @@ const LAWS = {
     SUB: 1,
     MUL: 2,
     POWZERO: 3,
+    DISTRIBUTE_MUL: 4,
+    DISTRIBUTE_DIV: 5,
     RANDOM: -1
+}
+
+const LEVEL = {
+    EASY: 'easy',
+    MEDIUM: 'medium',
+    HARD: 'hard',
 }
 
 /*
@@ -28,6 +36,11 @@ DONE: use map
 
 TODO: 
     difficulty level
+    
+    there should be  function which will simplify the answer.
+    like if I pass 1^23 it should give me 1
+
+    add difficulty level changes to  formula
 */
 
 function Jax(props) {
@@ -70,11 +83,15 @@ function Button(props) {
     return (
         <div>
             <button style={{
-                width: '220px',
-                height: '40px',
-                margin: '10px',
-                backgroundColor: props.active ? 'rgba(0, 255, 0, 0.6)' : 'white',
-                // border: ' 1px solid rgba(255, 0, 0, 0.7)'
+                backgroundColor: '#008CBA',
+                border: 'none',
+                color: 'white',
+                padding: '10px',
+                textAlign: 'center',
+                width: '150px',
+                height: '60px',
+                fontSize: '14px',
+                margin: '10px'
             }}
                 onClick={() => { props.clickHandler(props.id) }}>
                 {props.name}
@@ -90,7 +107,9 @@ class Indices extends React.Component {
         this.k = 0;
         this.showAnswer = false;
         this.clickHandler = this.clickHandler.bind(this);
+        this.changeHandler = this.changeHandler.bind(this);
         this.currentActive = LAWS.RANDOM;
+        this.level = LEVEL.EASY
         this.generateIndices();
     }
 
@@ -127,7 +146,13 @@ class Indices extends React.Component {
         this.indiceMap = new Map();
         for (let i = 0; i < 20; i++) {
             let obj = new Object();
-            obj.base1 = getRandomIntInclusive(1, 10); // we need at least one  base.
+            let powerCount = 0;
+            let baseCount = 0;
+            obj.powerArray = [];
+            obj.baseArray = [];
+
+            obj.baseArray.push(getRandomIntInclusive(1, 9));
+
             if (this.currentActive == LAWS.RANDOM)
                 obj.op_index = getRandomIntInclusive(0, 3); // the law we are using.
             else
@@ -135,22 +160,58 @@ class Indices extends React.Component {
 
             switch (obj.op_index) {
                 case LAWS.ADD:
-                    obj.p1 = getRandomIntInclusive(1, 6);
-                    obj.p2 = getRandomIntInclusive(1, 6);
-                    obj.result = obj.p1 + obj.p2;
+                    powerCount = this.level == LEVEL.EASY ? 2 : getRandomIntInclusive(3, 5);
+                    // obj.powerCount = powerCount;
+                    obj.result = 0;
+                    while (powerCount--) {
+                        let p = getRandomIntInclusive(0, 5)
+                        obj.powerArray.push(p);
+                        obj.result += p
+                    }
                     break;
+
                 case LAWS.SUB:
-                    obj.p1 = getRandomIntInclusive(1, 6);
-                    obj.p2 = getRandomIntInclusive(1, 6);
-                    obj.result = obj.p1 - obj.p2;
+                    let a, b;
+                    a = getRandomIntInclusive(1, 9);
+
+                    if (this.level == LEVEL.EASY)
+                        b = getRandomIntInclusive(1, a); //easy level: we keep the second number smaller.
+                    else
+                        b = getRandomIntInclusive(a, 9); //medium level: we keep the second number smaller.
+
+                    obj.result = a - b;
+                    obj.powerArray.push(a);
+                    obj.powerArray.push(b);
                     break;
+
                 case LAWS.MUL:
-                    obj.p1 = getRandomIntInclusive(1, 6);
-                    obj.p2 = getRandomIntInclusive(1, 6);
-                    obj.result = obj.p1 * obj.p2;
+                    powerCount = this.level == LEVEL.EASY ? 2 : getRandomIntInclusive(3, 5);
+                    obj.result = 1;
+                    while (powerCount--) {
+                        let p = getRandomIntInclusive(0, 5)
+                        obj.powerArray.push(p);
+                        obj.result *= p
+                    }
                     break;
+
                 case LAWS.POWZERO:
                     obj.result = 0;
+                    break;
+
+                case LAWS.DISTRIBUTE_MUL:
+                case LAWS.DISTRIBUTE_DIV:
+                    baseCount = this.level == LEVEL.EASY ? 1 : getRandomIntInclusive(2, 4);
+                    while (baseCount--) {
+                        let a = getRandomIntInclusive(2, 9);
+                        if (obj.baseArray.indexOf(a) == -1) {
+                            obj.baseArray.push(a);
+                        }
+                        else {
+                            baseCount++;
+                        }
+                    }
+
+                    obj.powerArray.push(getRandomIntInclusive(2, 9));
                     break;
             }
 
@@ -164,14 +225,12 @@ class Indices extends React.Component {
         let _style = { border: '1px solid orange', margin: '10px', padding: '10px' };
 
         if (showAnswer) {
-            // arr.push(<Arrow />)
             arr.push(
                 <Jax style={_style}>
                     {`$${obj.base1} ^ {${obj.result}}$`}
                 </Jax >
             )
-            if (obj.result == 0) {
-                //arr.push(<Arrow />)
+            if (obj.result == 0 || obj.base1 == 1) {
                 arr.push(
                     <Jax style={_style}>
                         {`$${1}$`}
@@ -179,7 +238,6 @@ class Indices extends React.Component {
                 )
             }
             else if (obj.result == 1) {
-                // arr.push(<Arrow />)
                 arr.push(
                     <Jax style={_style}>
                         {`$${obj.base1}$`}
@@ -187,14 +245,12 @@ class Indices extends React.Component {
                 )
             }
             else if (obj.result < 0) {
-                // arr.push(<Arrow />)
                 arr.push(
                     <Jax style={_style}>
                         {`$${1} \\over {${obj.base1} ^ ${obj.result * -1}}$`}
                     </Jax>
                 )
                 if (obj.result == -1) {
-                    // arr.push(<Arrow />)
                     arr.push(
                         <Jax style={_style}>
                             {`$${1} \\over ${obj.base1}$`}
@@ -216,11 +272,28 @@ class Indices extends React.Component {
     generateProblems(obj) {
 
         var returnValue;
+        let que = '';
+        let midSteps = '';
+
+        obj.base1 = obj.baseArray[0];
         switch (obj.op_index) {
             case LAWS.ADD:
+                que = '$';
+
+                for (let i = 0; i < obj.powerArray.length; i++) {
+                    if (i == obj.powerArray.length - 1) {
+                        que += `${obj.base1} ^ {${obj.powerArray[i]}}$`;
+                        midSteps += `${obj.powerArray[i]}`
+                    }
+                    else {
+                        que += `${obj.base1} ^ {${obj.powerArray[i]}} \\times `;
+                        midSteps += `${obj.powerArray[i]} + `
+                    }
+                }
+
                 returnValue = <DisplayBox >
                     <Jax style={{ margin: 'auto' }}>
-                        {`$${obj.base1} ^ {${obj.p1}} \\times ${obj.base1} ^ {${obj.p2}}$`}
+                        {que}
                     </Jax>
 
                     {this.showAnswer &&
@@ -232,7 +305,7 @@ class Indices extends React.Component {
                             <Target>
                                 <Answer>
                                     <Jax style={{ border: '1px solid orange', margin: '10px', padding: '10px' }}>
-                                        {`$${obj.base1} ^ {\(${obj.p1} + ${obj.p2}\)}$`}
+                                        {`$${obj.base1} ^ {\(${midSteps}\)}$`}
                                     </Jax>
 
                                     {this.getResult(obj, this.showAnswer)}
@@ -242,7 +315,7 @@ class Indices extends React.Component {
                                 <Arrow className="popper__arrow" />
                                 <div style={{ fontSize: '0.5em' }}>
                                     आधार({obj.base1}) सारखा आहे म्हणून
-                                    दोन्ही संख्येच्या घातांकाची({obj.p1} + {obj.p2} = {obj.result}) बेरीज होणार.
+                                    दोन्ही संख्येच्या घातांकाची({midSteps} = {obj.result}) बेरीज होणार.
                                 </div>
                             </Popper>
                         </Manager>
@@ -251,8 +324,11 @@ class Indices extends React.Component {
                 break;
 
             case LAWS.SUB:
+                obj.p1 = obj.powerArray[0];
+                obj.p2 = obj.powerArray[1];
+
                 returnValue = <DisplayBox>
-                    <Jax style={{ margin: 'auto' }}>
+                    <Jax style={{ margin: 'auto', fontSize: '1.4em' }}>
                         {`$${obj.base1} ^ {${obj.p1}} \\over ${obj.base1} ^ {${obj.p2}}$`}
                     </Jax>
 
@@ -284,9 +360,25 @@ class Indices extends React.Component {
                 break;
 
             case LAWS.MUL:
+                que = '';
+                midSteps = '';
+
+                for (let i = 0; i < obj.powerArray.length; i++) {
+                    if (i == 0) {
+                        que += `${obj.base1} ^ {${obj.powerArray[i]}}`
+                        midSteps += obj.powerArray[i]
+                    }
+                    else {
+                        que = `\( ${que} \) ^ {${obj.powerArray[i]}}`
+                        midSteps += ' \\times ' + obj.powerArray[i]
+                    }
+                }
+                que = `$${que}$`
+
                 returnValue = <DisplayBox>
                     <Jax style={{ margin: 'auto' }}>
-                        {`$\(${obj.base1} ^ {${obj.p1}}\) ^ {${obj.p2}}$`}
+                        {/*`$\(${obj.base1} ^ {${obj.p1}}\) ^ {${obj.p2}}$`*/}
+                        {que}
                     </Jax>
 
                     {this.showAnswer &&
@@ -298,19 +390,19 @@ class Indices extends React.Component {
                             <Target>
                                 <Answer>
                                     <Jax style={{ border: '1px solid orange', margin: '10px', padding: '10px' }}>
-                                        {`$${obj.base1} ^ {\(${obj.p1} \\times ${obj.p2}\)}$`}
+                                        {`$${obj.base1} ^ {\(${midSteps}\)}$`}
                                     </Jax>
 
                                     {this.getResult(obj, this.showAnswer)}
                                 </Answer>
-                            </Target>
+                            </Target >
                             <Popper className="popper" placement="right">
                                 <Arrow className="popper__arrow" />
                                 <div style={{ fontSize: '0.5em' }}>
-                                    घातांकाला({obj.p1}) जर घात({obj.p2}) असेल तेव्हा त्यांचा गुणाकार({obj.p1} * {obj.p2} = {obj.result}) होतो.
+                                    घातांकाला जर घात असेल तेव्हा त्यांचा गुणाकार {`$\(${midSteps}\) = ${obj.result}$`} होतो.
                                 </div>
                             </Popper>
-                        </Manager>
+                        </Manager >
                     }
                 </DisplayBox >
                 break;
@@ -344,6 +436,88 @@ class Indices extends React.Component {
                     }
                 </DisplayBox >
                 break;
+
+            case LAWS.DISTRIBUTE_MUL:
+                que = '$\(';
+                let ans = '$';
+
+                for (let i = 0; i < obj.baseArray.length; i++) {
+                    if (i == obj.baseArray.length - 1) {
+                        que += `${obj.baseArray[i]}`;
+                        ans += `${obj.baseArray[i]} ^ ${obj.powerArray[0]}`;
+                    }
+                    else {
+                        que += `${obj.baseArray[i]} \\times `;
+                        ans += `{${obj.baseArray[i]} ^ ${obj.powerArray[0]}} \\times`;
+                    }
+                }
+
+                que += `\)^ ${obj.powerArray[0]}$`;
+                ans += `$`;
+
+                returnValue = <DisplayBox>
+                    <Jax style={{ margin: 'auto' }}>
+                        {/*`$\(${obj.base1} \\times ${obj.base2}\) ^ ${obj.powerArray[0]}$`*/}
+                        {que}
+                    </Jax>
+
+                    {this.showAnswer &&
+                        <RightArrow />
+                    }
+
+                    {this.showAnswer &&
+                        <Manager>
+                            <Target>
+                                <Answer>
+                                    <Jax style={{ border: '1px solid orange', margin: '10px', padding: '10px' }}>
+                                        {/*`$${obj.base1} ^ ${obj.powerArray[0]} \\times ${obj.base2} ^ ${obj.powerArray[0]}$`*/}
+                                        {ans}
+                                    </Jax>
+                                </Answer>
+                            </Target>
+                            <Popper className="popper" placement="right">
+                                <Arrow className="popper__arrow" />
+                                <div style={{ fontSize: '0.5em' }}>
+                                    संख्येचा घात जर शsaman असेल तर to distribute hoto.
+                                </div>
+                            </Popper>
+                        </Manager>
+                    }
+                </DisplayBox>
+                break;
+
+            case LAWS.DISTRIBUTE_DIV:
+                obj.base2 = obj.baseArray[1];
+
+                returnValue = <DisplayBox>
+                    <Jax style={{ margin: 'auto' }}>
+                        {`$\({${obj.base1} \\over ${obj.base2}}\) ^ ${obj.powerArray[0]}$`}
+                    </Jax>
+
+                    {this.showAnswer &&
+                        <RightArrow />
+                    }
+
+                    {this.showAnswer &&
+                        <Manager>
+                            <Target>
+                                <Answer>
+                                    <Jax style={{ border: '1px solid orange', margin: '10px', padding: '10px' }}>
+                                        {`$${obj.base1} ^ ${obj.powerArray[0]} \\over ${obj.base2} ^ ${obj.powerArray[0]}$`}
+                                    </Jax>
+                                </Answer>
+                            </Target>
+                            <Popper className="popper" placement="right">
+                                <Arrow className="popper__arrow" />
+                                <div style={{ fontSize: '0.5em' }}>
+                                    संख्येचा घात जर शsaman असेल तर to distribute hoto.
+                                </div>
+                            </Popper>
+                        </Manager>
+                    }
+                </DisplayBox>
+                break;
+
         }
 
         return returnValue;
@@ -360,7 +534,7 @@ class Indices extends React.Component {
         let returnValue;
         let _style = {
             display: 'inline',
-            border: '1px solid red',
+            // border: '1px solid red',
             margin: '20px',
             padding: '10px'
         }
@@ -369,43 +543,66 @@ class Indices extends React.Component {
             case LAWS.ADD:
                 returnValue =
                     <div>
-                        <br />
                         <Jax style={_style}>
                             {`$a ^ m \\times a ^ n = a ^ {\(m + n\)}$`}
                         </Jax>
                         <br />
                     </div>
                 break;
+
             case LAWS.SUB:
                 returnValue =
                     <div>
-                        <br />
                         <Jax style={_style}>
                             {`$a ^ m \\over a ^ n$ = $a ^ {\(m - n\)}$`}
                         </Jax>
                         <br />
                     </div>
                 break;
+
             case LAWS.MUL:
                 returnValue =
                     <div>
-                        <br />
                         <Jax style={_style}>
                             {`$(a ^ m)  ^ n = a ^ {m \\times n}$`}
                         </Jax>
                         <br />
                     </div>
                 break;
+
             case LAWS.POWZERO:
                 returnValue =
                     <div>
-                        <br />
                         <Jax style={_style}>
                             {`$a  ^ 0 = 1$`}
+                        </Jax>
+                        <Jax style={_style}>
+                            {`$1  ^ m = 1$`}
                         </Jax>
                         <br />
                     </div>
                 break;
+
+            case LAWS.DISTRIBUTE_MUL:
+                returnValue =
+                    <div>
+                        <Jax style={_style}>
+                            {`$\(a \\times b\) ^ m = {a ^ m \\times b ^ m}$`}
+                        </Jax>
+                        <br />
+                    </div>
+                break;
+
+            case LAWS.DISTRIBUTE_DIV:
+                returnValue =
+                    <div>
+                        <Jax style={_style}>
+                            {`$\({a \\over b}\) ^ m = {a ^ m \\over b ^ m}$`}
+                        </Jax>
+                        <br />
+                    </div>
+                break;
+
             case LAWS.RANDOM:
                 returnValue =
                     <Jax></Jax>
@@ -418,11 +615,21 @@ class Indices extends React.Component {
         )
     }
 
+    changeHandler(event) {
+        if (this.level == event.target.value)
+            return;
+
+        this.setState({});
+        this.showAnswer = false;
+        this.level = event.target.value;
+        this.generateIndices();
+    }
+
     render() {
         let items = [];
-        const width = this.showAnswer ? '700px' : '200px';
+        const width = this.showAnswer ? '1000px' : '1000px';
         const align = this.showAnswer ? 'center' : 'center';
-        const flexDir = this.showAnswer ? 'column' : 'row';
+        const flexDir = this.showAnswer ? 'column' : 'column';
         let i = 1;
 
         for (let obj_key of this.indiceMap.keys()) {
@@ -434,6 +641,17 @@ class Indices extends React.Component {
                 </div>
             </div>);
         }
+        let _select_style = {
+            backgroundColor: '#555555',
+            border: 'none',
+            color: 'white',
+            padding: '10px',
+            textAlign: 'center',
+            textDecoration: 'none',
+            display: 'inline-block',
+            fontSize: '16px',
+            margin: '4px 2px'
+        }
         return (
             <div>
                 <div style={{ display: 'flex', flexDirection: "row", flexWrap: 'wrap' }}>
@@ -441,13 +659,26 @@ class Indices extends React.Component {
                     <Button active={this.currentActive == LAWS.SUB} id={LAWS.SUB} name='घातांकाची वजाबाकी' clickHandler={this.clickHandler} />
                     <Button active={this.currentActive == LAWS.MUL} id={LAWS.MUL} name='घातांकाचा गुणाकार' clickHandler={this.clickHandler} />
                     <Button active={this.currentActive == LAWS.POWZERO} id={LAWS.POWZERO} name='शून्य घात' clickHandler={this.clickHandler} />
+                    <Button active={this.currentActive == LAWS.DISTRIBUTE_MUL} id={LAWS.DISTRIBUTE_MUL} name='घातांकाचे विभाजन(गुणाकार)' clickHandler={this.clickHandler} />
+                    <Button active={this.currentActive == LAWS.DISTRIBUTE_DIV} id={LAWS.DISTRIBUTE_DIV} name='घातांकाचे विभाजन(भागाकार)' clickHandler={this.clickHandler} />
                     <Button active={this.currentActive == LAWS.RANDOM} id={LAWS.RANDOM} name='Random Problems' clickHandler={this.clickHandler} />
                 </div>
-                {this.formula(this.currentActive)}
+
+                {/* this.formula(this.currentActive) */}
+
+                {([LAWS.ADD, LAWS.MUL, LAWS.DISTRIBUTE_MUL].indexOf(this.currentActive) != -1) &&
+                    <div>
+                        <select value={this.level} style={_select_style} onChange={this.changeHandler}>
+                            <option value="easy">Easy</option>
+                            <option value="medium">Medium</option>
+                            {/* <option value="hard">Hard</option > */}
+                        </select>
+                    </div>
+                }
                 < div style={{ display: 'flex', flexDirection: `${flexDir}`, flexWrap: 'wrap', margin: '10px' }}>
                     {items}
                 </div >
-            </div>
+            </div >
         )
     }
 }
