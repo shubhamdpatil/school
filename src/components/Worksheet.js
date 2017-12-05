@@ -14,8 +14,7 @@ import Indices from './Indices'
 import Lcm from './Lcm'
 import WholeFraction from './WholeFraction'
 import FractionCompare from './FractionCompare'
-
-
+import AddFractions from './AddFractions'
 
 const util = require('util')
 
@@ -28,7 +27,7 @@ class Worksheet extends Component {
 
     constructor(props) {
         super(props);
-        this.newOperation = this.selectedOperation = 'compareFraction';
+        this.newOperation = this.selectedOperation = 'addFraction';
         this.state = {}
         this.checkCallback = this.checkCallback.bind(this);
         this.newSumCallback = this.newSumCallback.bind(this);
@@ -141,7 +140,10 @@ class Worksheet extends Component {
             result.push(<WholeFraction key={key} check={this.check} new={this.new} improper={improper} />)
         } else if (operation === 'compareFraction') {
             result.push(<FractionCompare key={key} check={this.check} new={this.new} answer={this.answer} />)
+        } else if (operation === 'addFraction') {
+            result.push(<AddFractions key={key} check={this.check} new={this.new} answer={this.answer} />)
         }
+        
         return result;
     }
 
@@ -171,6 +173,7 @@ class Worksheet extends Component {
                         <option value="wholeFraction">wholeFraction</option>
                         <option value="improperFraction">ImproperFraction</option>
                         <option value="compareFraction">Compare Fractions</option>
+                        <option value="addFraction">Add Fractions</option>
                     </select>{/* 
                     <label> Columns </label>
                     <input type="text" ref="columns" defaultValue={3} placeholder="3" />
