@@ -306,3 +306,13 @@ p.bold {
     margin-left: 0;
     margin-right: 0;
 }
+
+.FractionComparision {
+    display: 'flex';
+     align-items: 'center';
+     justify-content: 'center';
+      margin: '10px';
+      border: '1px solid #000';
+       width: '150px';
+        height: '100px';
+}
