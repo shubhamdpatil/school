@@ -6,7 +6,6 @@ import { Manager, Target, Popper, Arrow } from 'react-popper'
 import styles from './../styles/Globals.css'
 import classNames from 'classnames';
 
-const math = require('mathjs');
 var hash = require('object-hash');
 
 const QUESTION = 20
@@ -28,19 +27,29 @@ const LEVEL = {
 }
 
 /*
-DONE: use map
-    to show its an expression put it under jax tag
-    simplyfy answers
-    Topic wise problems
-    change the way answer looks
+DONE: 
+    0. use map
+    1. To show its an expression put it under jax tag
+    2. Simplyfy answers
+    3. Topic wise problems
+    4. Change the way answer looks
+    5. Difficulty level
 
 TODO: 
-    difficulty level
-    
-    there should be  function which will simplify the answer.
-    like if I pass 1^23 it should give me 1
+    1. Implement getter function for each law.
+        This will simpyfy most of the things and 
+        ease the implementation of complex problems.
 
-    add difficulty level changes to  formula
+    2. Implement the function which will simplify the answer
+        if it is already simplified returns false.
+
+    3. Add difficulty level changes to formula
+
+    4. fractional indices and -ve power
+    5. layout change
+    6. lcm, gcd, factors
+
+    5. normal addition subtraction (+ - ) using number line
 */
 
 function Jax(props) {
@@ -66,14 +75,21 @@ function Index(props) {
 function RightArrow(props) {
     return (
         <div style={props.style} style={{ margin: 'auto' }}  >
-            &#8658;
+            &nbsp;=&nbsp;
         </div>
     )
 }
 
 function Answer(props) {
     return (
-        <div style={{ border: '1px solid green', margin: '10px', padding: '10px' }}>
+        <div style={{
+            border: '1px solid green',
+            margin: '10px',
+            padding: '10px',
+            display: 'flex',
+            flexDirection: "row",
+            flexWrap: 'wrap'
+        }}>
             {props.children}
         </div>
     )
@@ -83,9 +99,9 @@ function Button(props) {
     return (
         <div>
             <button style={{
-                backgroundColor: props.active ? '#e7e7e7' : '#008CBA',
-                border: 'none',
-                color: props.active ? 'black' : 'white',
+                backgroundColor: props.active ? 'white' : '#008CBA',
+                border: props.active ? '1px solid #008CBA' : 'none',
+                color: props.active ? '#008CBA' : 'white',
                 padding: '10px',
                 textAlign: 'center',
                 width: '150px',
@@ -230,12 +246,14 @@ class Indices extends React.Component {
         let _style = { border: '1px solid orange', margin: '10px', padding: '10px' };
 
         if (showAnswer) {
+            arr.push(<RightArrow />)
             arr.push(
                 <Jax style={_style}>
                     {`$${obj.base1} ^ {${obj.result}}$`}
                 </Jax >
             )
             if (obj.result == 0 || obj.base1 == 1) {
+                arr.push(<RightArrow />)
                 arr.push(
                     <Jax style={_style}>
                         {`$${1}$`}
@@ -243,6 +261,7 @@ class Indices extends React.Component {
                 )
             }
             else if (obj.result == 1) {
+                arr.push(<RightArrow />)
                 arr.push(
                     <Jax style={_style}>
                         {`$${obj.base1}$`}
@@ -250,18 +269,21 @@ class Indices extends React.Component {
                 )
             }
             else if (obj.result < 0) {
+                arr.push(< RightArrow />)
                 arr.push(
                     <Jax style={_style}>
                         {`$${1} \\over {${obj.base1} ^ ${obj.result * -1}}$`}
                     </Jax>
                 )
                 if (obj.result == -1) {
+                    arr.push(<RightArrow />)
                     arr.push(
                         <Jax style={_style}>
                             {`$${1} \\over ${obj.base1}$`}
                         </Jax>
                     )
                     if (obj.base1 == 1) {
+                        arr.push(< RightArrow />)
                         arr.push(
                             <Jax style={_style}>
                                 {`$${obj.base1}$`}
@@ -632,9 +654,9 @@ class Indices extends React.Component {
 
     render() {
         let items = [];
-        const width = this.showAnswer ? '1000px' : '1000px';
+        const width = this.showAnswer ? '1000px' : '500px';
         const align = this.showAnswer ? 'center' : 'center';
-        const flexDir = this.showAnswer ? 'column' : 'column';
+        const flexDir = this.showAnswer ? 'column' : 'row';
         let i = 1;
 
         for (let obj_key of this.indiceMap.keys()) {

@@ -15,6 +15,7 @@ import Lcm from './Lcm'
 import WholeFraction from './WholeFraction'
 import FractionCompare from './FractionCompare'
 import AddFractions from './AddFractions'
+import LCM_GCD from './LCM_GCD'
 
 const util = require('util')
 
@@ -27,7 +28,7 @@ class Worksheet extends Component {
 
     constructor(props) {
         super(props);
-        this.newOperation = this.selectedOperation = 'addFraction';
+        this.newOperation = this.selectedOperation = 'LCM_GCD';
         this.state = {}
         this.checkCallback = this.checkCallback.bind(this);
         this.newSumCallback = this.newSumCallback.bind(this);
@@ -92,32 +93,32 @@ class Worksheet extends Component {
             for (let i = 0; i < 10; i++) {
                 result.push(<div key={i} style={{ borderStyle: 'solid', borderColor: 'gray', margin: '10px 40px 10px 10px', position: 'relative' }} >
                     {<Index index={i + 1} />}
-                    <Mult key={i} check={this.state.check} new={this.state.new} /> </div>);
+                    <Mult key={i} check={this.check} new={this.new} /> </div>);
             }
         } else if (operation === 'division') {
             for (let i = 0; i < 1; i++) {
                 result.push(<div key={i} style={{ borderStyle: 'solid', borderColor: 'gray', margin: '10px 40px 10px 10px', position: 'relative' }} >
                     {<Index index={i + 1} />}
-                    <Div key={i} check={this.state.check} new={this.state.new} /> </div>);
+                    <Div key={i} check={this.check} new={this.new} /> </div>);
             }
         } else if (operation === 'addition') {
             for (let i = 0; i < count; i++) {
                 result.push(<div key={i} style={{ borderStyle: 'solid', borderColor: 'gray', margin: '10px 40px 10px 10px', position: 'relative' }} >
                     {<Index index={i + 1} />}
-                    <Add key={i} check={this.state.check} new={this.state.new} /> </div>);
+                    <Add key={i} check={this.check} new={this.new} /> </div>);
             }
         } else if (operation === 'subtraction') {
             for (let i = 0; i < 4; i++) {
                 result.push(<div key={i} style={{ borderStyle: 'solid', borderColor: 'gray', margin: '10px 40px 10px 10px', position: 'relative' }} >
                     {<Index index={i} />}
-                    <Sub key={i} check={this.state.check} new={this.state.new} /> </div>);
+                    <Sub key={i} check={this.check} new={this.new} /> </div>);
             }
         }
         else if (operation === 'fraction') {
             for (let i = 0; i < 1; i++) {
                 result.push(<div key={i} style={{ borderStyle: 'solid', borderColor: 'gray', margin: '10px 40px 10px 10px', position: 'relative' }} >
                     {<Index index={i + 1} />}
-                    <Fraction key={i} check={this.state.check} new={this.state.new} />
+                    <Fraction key={i} check={this.check} new={this.new} />
                 </div>
                 );
             }
@@ -143,7 +144,10 @@ class Worksheet extends Component {
         } else if (operation === 'addFraction') {
             result.push(<AddFractions key={key} check={this.check} new={this.new} answer={this.answer} />)
         }
-        
+        else if (operation === 'LCM_GCD') {
+            result.push(<LCM_GCD key={key} check={this.check} new={this.new} answer={this.answer} />)
+        }
+
         return result;
     }
 
@@ -174,6 +178,7 @@ class Worksheet extends Component {
                         <option value="improperFraction">ImproperFraction</option>
                         <option value="compareFraction">Compare Fractions</option>
                         <option value="addFraction">Add Fractions</option>
+                        <option value="LCM_GCD">LCM_GCD</option>
                     </select>{/* 
                     <label> Columns </label>
                     <input type="text" ref="columns" defaultValue={3} placeholder="3" />
